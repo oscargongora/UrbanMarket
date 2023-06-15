@@ -1,0 +1,2 @@
+﻿namespace ChicStreetwear.Application.Common.Responses;
+public sealed record AddressResponse(string FirstName, string LastName, string FullName, string Email, string PhoneNumber, string AddressLine1, string? AddressLine2, string Country, string City, string State, string PostalCode);

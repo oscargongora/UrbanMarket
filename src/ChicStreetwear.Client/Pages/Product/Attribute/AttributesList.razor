@@ -1,0 +1,64 @@
+﻿@using ChicStreetwear.Shared.Models.Product;
+
+<MudCard Class="mt-6">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                Attributes
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                           OnClick="@(()=>ShowAttributeFormDialog())" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable Items="@Attributes" T="AttributeModel" Elevation="0"
+                  Dense="true" Hover="true" RowsPerPage="5"
+                  OnRowClick="@(args => ShowAttributeFormDialog(args.Item))">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="attributeContext">
+                <MudTd DataLabel="Name">@attributeContext.Name</MudTd>
+                <MudTd DataLabel="" Style="text-align:right">
+                    <MudIconButton Class="pa-0" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                   OnClick="@(async () => await RemoveAttribute.InvokeAsync(attributeContext))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager HideRowsPerPage="true" />
+            </PagerContent>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    private IDialogService _dialogService { get; set; } = default!;
+
+    [Parameter]
+    public List<AttributeModel> Attributes { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<(string? name, AttributeModel attribute)> SaveAttribute { get; set; }
+
+    [Parameter]
+    public EventCallback<AttributeModel> RemoveAttribute { get; set; }
+
+    private async Task ShowAttributeFormDialog(AttributeModel? attribute = null)
+    {
+        AttributeFormDialogModel model = new() { Name = attribute?.Name ?? string.Empty };
+
+        var parameters = new DialogParameters { ["Model"] = model };
+        var options = new DialogOptions() { CloseButton = true };
+        var dialog = await _dialogService.ShowAsync<AttributeFormDialog>("Attribute Form Dialog", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            model = (AttributeFormDialogModel)result.Data;
+            await SaveAttribute.InvokeAsync((attribute?.Name, new() { Name = model.Name }));
+        }
+    }
+}

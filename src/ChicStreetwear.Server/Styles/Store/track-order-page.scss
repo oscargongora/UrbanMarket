@@ -1,0 +1,35 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#trackorder-page {
+    margin: 96px auto 0;
+
+    .page-section {
+        > .container-fluid {
+            #search-form {
+                display: flex;
+                flex-flow: row wrap;
+                gap: 16px;
+
+                > div {
+                    width: min(400px, 100%);
+
+                    input {
+                    }
+                }
+            }
+
+            h3 {
+                font-weight: 500;
+                font-size: map.get($font-sizes, fs3);
+                color: map.get($colors, dark);
+            }
+
+            h4 {
+                font-weight: 500;
+                font-size: map.get($font-sizes, fs3);
+                color: map.get($colors, dark);
+            }
+        }
+    }
+}

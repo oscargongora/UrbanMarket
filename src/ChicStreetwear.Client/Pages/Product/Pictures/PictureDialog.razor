@@ -1,0 +1,56 @@
+﻿@using ChicStreetwear.Shared.Models.Common;
+@using ChicStreetwear.Shared.Models.Product;
+@using System.Globalization;
+
+<MudDialog ClassContent="pa-0">
+    <DialogContent>
+        <MudCard Elevation="0">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@Model.Name</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                       OnClick="OnDeleteClick" />
+                    </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudIconButton Icon="@Icons.Material.Filled.Image" Color="Color.Default"
+                                       OnClick="SetCoverPicture" />
+                    </MudHidden>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default"
+                                   OnClick="@(()=>MudDialog.Cancel())" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Class="d-flex justify-center align-content-center" Style="height:calc(100vh - 130px);">
+                <MudImage Src="@Model.Url" Alt="@Model.Name"
+                          Class="rounded d-block ma-auto"
+                          Style="max-width:100%;height:auto;max-height:100%;" />
+            </MudCardContent>
+            <MudCardActions Class="d-flex justify-center align-content-center">
+                <MudHidden Breakpoint="Breakpoint.SmAndUp">
+                    <MudIconButton Icon="@Icons.Material.Filled.Image" Color="Color.Default"
+                                   OnClick="SetCoverPicture" />
+                </MudHidden>
+
+                <MudHidden Breakpoint="Breakpoint.SmAndUp">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                   OnClick="OnDeleteClick" />
+                </MudHidden>
+            </MudCardActions>
+        </MudCard>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public PictureModel Model { get; set; }
+    internal const string OnDeleteClickName = nameof(OnDeleteClick);
+    internal const string SetCoverPictureName = nameof(SetCoverPicture);
+
+    void OnDeleteClick() => MudDialog.Close(DialogResult.Ok(OnDeleteClickName));
+    void SetCoverPicture() => MudDialog.Close(DialogResult.Ok(SetCoverPictureName));
+}

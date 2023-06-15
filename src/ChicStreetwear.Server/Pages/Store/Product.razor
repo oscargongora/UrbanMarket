@@ -1,0 +1,161 @@
+﻿@page "/store/product/{id:guid}"
+
+@using ChicStreetwear.Application.Categories.Queries;
+@using ChicStreetwear.Application.Products.Queries;
+@using ChicStreetwear.Server.Pages.Store.Components
+@using ChicStreetwear.Server.Pages.Store.State.Cart;
+@using ChicStreetwear.Server.Services;
+@using ChicStreetwear.Shared.Enums;
+@using ChicStreetwear.Shared.Models.Category;
+@using MediatR;
+@using System.Globalization;
+
+<div id="product-page" class="page">
+    <div id="product-section" class="page-section">
+        @if (product is null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <div class="container-fluid">
+                <div id="product-images">
+                    <div id="current-image">
+                        <img class="@(currentImgUrl is null? "placeholder-pic": "")" src="@(currentImgUrl?? "assets/tag-solid.svg")" />
+                    </div>
+
+                    <div id="others-images">
+                        @foreach (var p in product.Pictures)
+                        {
+                            <div>
+                                <img class="thumbnail @(p.Url.Equals(currentImgUrl)? "selected": "")"
+                                     src="@p.ThumbnailUrl"
+                                @onclick="(() => HandleThumbnailClick(p.Url))" />
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div id="product-description">
+                    <h2>
+                        @product.Name
+                    </h2>
+                    <Rating Value="product.Rating.Value" Count="product.Rating.Count" />
+                    <p>@product.Description</p>
+                    <div class="price">
+                        <div>
+                            <h3>@(currentPrice.ToString("c2", CultureInfo.CreateSpecificCulture("en-US")))</h3>
+                            @if (product.SalePrice.HasValue)
+                            {
+                                <span>@(discountPercent.ToString("p2"))</span>
+                            }
+                        </div>
+                        @if (product.SalePrice.HasValue)
+                        {
+                            <span>@product.RegularPrice!.Value.ToString("c2", CultureInfo.CreateSpecificCulture("en-US"))</span>
+                        }
+                    </div>
+
+                    <div class="actions">
+                        @if (CartState.Value.Products.Contains(cartProductStateModel))
+                        {
+                            <button class="btn btn-cart-remove" @onclick="OnRemoveProductFromCartClick">
+                                Remove from cart
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-cart-add" @onclick="OnAddProductToCartClick">
+                                Add to cart
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid? VariationId { get; set; }
+
+    [Inject]
+    private ISender Sender { get; set; } = default!;
+
+    [Inject]
+    private IState<CartState> CartState { get; set; } = default!;
+
+    [Inject]
+    public CartService CartService { get; set; } = default!;
+
+    private ProductModel? product = null;
+    private CartProductStateModel cartProductStateModel = null;
+    private string? currentImgUrl = null;
+    private decimal discountPercent = 0;
+    private decimal currentPrice = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var productResult = await Sender.Send(new GetProductByIdQuery() { Id = Id });
+        if (!productResult.HasErrors)
+        {
+            product = productResult.Data;
+            cartProductStateModel = new(product.Id, null, 1);
+            currentImgUrl = product.CoverPicture?.Url;
+
+            currentPrice = product.SalePrice ?? product.RegularPrice ?? 0;
+
+            if (product.SalePrice is not null)
+            {
+                discountPercent = (product.SalePrice ?? 0) / (product.RegularPrice ?? 1);
+            }
+        }
+    }
+
+    private async Task OnAddProductToCartClick()
+    {
+        await CartService.AddProductToCart(CartState.Value.Products, cartProductStateModel);
+    }
+
+    private async Task OnRemoveProductFromCartClick()
+    {
+        await CartService.RemoveProductFromCart(CartState.Value.Products, cartProductStateModel);
+    }
+
+    private StoreProductModel ToStoreProductModel(ProductModel product)
+    {
+        StoreProductModel storeProduct = new()
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                IsOnSale = product.SalePrice is not null,
+                Price = product.SalePrice ?? product.RegularPrice ?? 0,
+                ThumbnailUrl = product.CoverPicture?.ThumbnailUrl,
+                Rating = product.Rating
+            };
+
+        if (product.HasAttributes)
+        {
+            var variation = product.Variations.FirstOrDefault(v => v.Stock > 0);
+            if (variation is not null)
+            {
+                storeProduct.VariationId = variation.Id;
+                storeProduct.Attributes = variation.Attributes.Select(va => new StoreAttributeVariationModel(va.Attribute.Name, va.Value)).ToList();
+                storeProduct.IsOnSale = variation.SalePrice is not null;
+                storeProduct.Price = variation.SalePrice ?? variation.RegularPrice;
+            }
+        }
+        return storeProduct;
+    }
+
+    private void HandleThumbnailClick(string url)
+    {
+        currentImgUrl = url;
+    }
+}

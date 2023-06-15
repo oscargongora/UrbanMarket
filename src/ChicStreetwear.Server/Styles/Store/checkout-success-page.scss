@@ -1,0 +1,60 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#checkout-success-page {
+    margin: 96px auto 0;
+
+    .page-section {
+        > .container-fluid {
+            padding: 0 32px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            margin: 0;
+            max-width: fit-content;
+            background-color: map.get($colors, light);
+
+            > * {
+                font-weight: 300;
+            }
+
+            > p {
+                font-size: map.get($font-sizes, fs2);
+                padding: 0;
+                margin: 0 32px 0 0;
+            }
+
+            button {
+                padding: 0;
+                border: none;
+
+                &.text-success {
+                    animation: on-click-frame 0.6s ease-in-out;
+                }
+
+                > i {
+                    cursor: pointer;
+                    font-size: 22px;
+
+                    &.text-black {
+                        color: map.get($colors, dark);
+                    }
+                }
+
+                @keyframes on-click-frame {
+                    0% {
+                        transform: scale(1);
+                    }
+
+                    60% {
+                        transform: scale(1.2);
+                    }
+
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+            }
+        }
+    }
+}

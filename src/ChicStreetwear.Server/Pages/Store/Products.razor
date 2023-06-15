@@ -1,0 +1,180 @@
+﻿@page "/store/products"
+@using ChicStreetwear.Application.Categories.Queries;
+@using ChicStreetwear.Application.Products.Queries;
+@using ChicStreetwear.Server.Pages.Store.Components
+@using ChicStreetwear.Shared.Enums;
+@using ChicStreetwear.Shared.Models.Category;
+@using MediatR;
+
+<div id="products-page" class="page">
+    <div id="products-section" class="page-section">
+        <h2 class="page-section-title">
+            Products
+        </h2>
+        <div class="container-fluid">
+            <div class="products-filter-section">
+                <button id="filter-btn" class="@FilterBtnClass" @onclick="HandleFilterSubmit">
+                    Filter
+                    <span>(@FilterCount)</span>
+                </button>
+                <div>
+                    <label for="sort-option" class="form-label">Sort</label>
+                    <InputSelect id="sort-option" class="form-select" @bind-Value="sort">
+                        <option value="">Select to order</option>
+                        <option value=@ProductSortOption.Newest>Newest</option>
+                        <option value=@ProductSortOption.BestSeller>Best Seller</option>
+                        <option value=@ProductSortOption.LowerPrice>Lower Price</option>
+                        <option value=@ProductSortOption.HigherPrice>Higher Price</option>
+                        <option value=@ProductSortOption.HighestRating>Highest Rating</option>
+                    </InputSelect>
+                </div>
+
+                <div>
+                    <label for="category-option" class="form-label">Category</label>
+                    <InputSelect id="category-option" class="form-select" @bind-Value="CategoryId">
+                        <option value="@Guid.Empty">All categories</option>
+                        @foreach (var category in _categories)
+                        {
+                            <option value=@category.Id>@category.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="price-group">
+                    <label for="min-price-option" class="form-label">Min Price</label>
+                    <InputNumber id="min-price-option" class="form-control" @bind-Value="MinPrice" />
+                    <button class="btn btn-link" @onclick="()=> MinPrice=null">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="price-group">
+                    <label for="max-price-option" class="form-label">Max Price</label>
+                    <InputNumber id="max-price-option" class="form-control" @bind-Value="MaxPrice" />
+                    <button class="btn btn-link" @onclick="()=> MaxPrice=null">
+                        Clear
+                    </button>
+                </div>
+
+                <div>
+                    <label for="min-rating-option" class="form-label">Rating</label>
+                    <InputSelect id="min-rating-option" class="form-select" @bind-Value="MinRating">
+                        <option value="0">All ratings</option>
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <option value=@i>@i</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
+            <ProductList Title="Products"
+                         Products="@_products"/>
+        </div>
+
+    </div>
+    <div id="load-more-section" class="page-section">
+        <div class="container-fluid">
+            <button class="btn btn-dark" @onclick="HandleLoadMoreClick" disabled="@(_products.Count < Take)">
+                Load more
+            </button>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    [Inject]
+    public NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private ISender Sender { get; set; } = default!;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public Guid CategoryId { get; set; } = Guid.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public decimal? MinPrice { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public decimal? MaxPrice { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public float MinRating { get; set; } = 0;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? sort { get; set; }
+    public ProductSortOption? SortOption { get; set; }
+
+    private const int PAGE_SIZE = 12;
+
+    private int Take { get; set; } = PAGE_SIZE;
+
+    private int FilterCount = 0;
+
+    private string FilterBtnClass = "btn btn-light";
+
+    private List<CategoryResponseModel> _categories = new();
+
+    private List<StoreProductModel> _products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var categoryResult = await Sender.Send(new GetCategoriesQuery());
+        if (!categoryResult.HasErrors)
+        {
+            _categories = categoryResult.Data;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Enum.TryParse<ProductSortOption>(sort, true, out ProductSortOption sortOptionResult))
+        {
+            SortOption = sortOptionResult;
+        }
+        FilterCount = (string.IsNullOrWhiteSpace(sort) ? 0 : 1) + (CategoryId.Equals(Guid.Empty) ? 0 : 1) + (MinPrice is null ? 0 : 1) +
+        (MaxPrice is null ? 0 : 1) + (MinRating == 0 ? 0 : 1);
+        FilterBtnClass = $"btn {(FilterCount > 0 ? "btn-dark" : "btn-light")}";
+        await LoadProducts();
+    }
+
+    private async Task HandleLoadMoreClick()
+    {
+        Take += PAGE_SIZE;
+        await LoadProducts();
+    }
+
+    private void HandleFilterSubmit()
+    {
+        string filterUrl = Navigation.GetUriWithQueryParameters(new Dictionary<string, object?>
+            {
+                [nameof(CategoryId)] = CategoryId.Equals(Guid.Empty) ? null : CategoryId,
+                [nameof(MinPrice)] = MinPrice,
+                [nameof(MaxPrice)] = MaxPrice,
+                [nameof(MinRating)] = MinRating == 0 ? null : MinRating,
+                ["Sort"] = string.IsNullOrWhiteSpace(sort) ? null : sort
+            });
+        Navigation.NavigateTo(filterUrl);
+    }
+
+    private async Task LoadProducts()
+    {
+        GetStoreProductsQuery query = new()
+            {
+                CategoryId = CategoryId.Equals(Guid.Empty) ? null : CategoryId,
+                MinPrice = MinPrice,
+                MaxPrice = MaxPrice,
+                MinRating = MinRating == 0 ? null : MinRating,
+                SortOption = SortOption,
+                Take = Take
+            };
+        var result = await Sender.Send(query);
+        _products = result.Data.ToList();
+    }
+}

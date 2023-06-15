@@ -1,0 +1,54 @@
+﻿@page "/manage/orders"
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Models.Order;
+@using Microsoft.AspNetCore.Authorization;
+
+@attribute [Authorize]
+
+<ChicStreetwear.Client.Components.DataGridTemplate TModel="OrderModel"
+                                                   Routing="@RoutingHelper.Order" Dense="true"
+                                                   Title="Orders"
+                                                   ShowAddButton="false">
+    <ColumnsFragment>
+        <PropertyColumn Property="order => order.Id" T="OrderModel" TProperty="Guid" />
+        <PropertyColumn Property="order => order.PlacedDate" Title="Placed Date" T="OrderModel" TProperty="DateTime">
+            <CellTemplate>
+                @context.Item.PlacedDate.ToShortDateString()
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="order => order.DispatchedDate" Title="Dispatched Date" T="OrderModel" TProperty="DateTime?">
+            <CellTemplate>
+                @(context.Item?.DispatchedDate?.ToShortDateString() ?? string.Empty)
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="order => order.DeliveredDate" Title="Delivered Date" T="OrderModel" TProperty="DateTime?">
+            <CellTemplate>
+                @(context.Item?.DeliveredDate?.ToShortDateString() ?? string.Empty)
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="order => order.Total" T="OrderModel" TProperty="decimal" Format="C" Sortable="false">
+            <CellTemplate>
+                $@(context.Item.Products.Sum(p => (p.Quantity * p.Price)))
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="order => order.Status" T="OrderModel" TProperty="OrderStatusModel" Filterable="true">
+            <CellTemplate>
+                @if (context.Item.Status.Equals(OrderStatusModel.Placed))
+                {
+                    <MudChip Color="Color.Error">Placed</MudChip>
+                }
+                else if (context.Item.Status.Equals(OrderStatusModel.Dispatched))
+                {
+                    <MudChip Color="Color.Warning">Dispatched</MudChip>
+                }
+                else
+                {
+                    <MudChip Color="Color.Success">Delivered</MudChip>
+                }
+            </CellTemplate>
+        </PropertyColumn>
+    </ColumnsFragment>
+</ChicStreetwear.Client.Components.DataGridTemplate>
+
+@code {
+}

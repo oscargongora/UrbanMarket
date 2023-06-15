@@ -1,0 +1,253 @@
+@use "sass:map";
+@import '_variables.scss';
+
+.btn, input, a, .card, .card-img-overlay, .card-img {
+    border-radius: 0 !important;
+}
+
+#store-layout, #shared-layout {
+    header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 5;
+        transition: all ease 0.4s;
+
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 64px;
+
+            @media (width < map.get($breakpoints, md)) {
+                padding: 0 32px;
+            }
+
+            @media (width < map.get($breakpoints, sm)) {
+                padding: 0 16px;
+            }
+        }
+
+        .alert {
+            border-radius: 0;
+            font-size: map.get($font-sizes, fs1);
+            background-color: map.get($colors, dark);
+            color: map.get($colors, light);
+            padding: 4px 0;
+
+            .container-fluid {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 32px;
+
+                .alert-message {
+                    > span {
+                        vertical-align: middle;
+                    }
+
+                    > a {
+                        color: map.get($colors, white);
+                        font-size: map.get($font-sizes, fs1);
+                        font-weight: 700;
+                        padding: 0;
+                    }
+                }
+
+                > .btn-close {
+                    position: relative;
+                    background: none;
+                    padding: 0;
+
+                    i {
+                        color: map.get($colors, white);
+                    }
+                }
+            }
+        }
+
+        .navbar {
+            padding: 8px 0;
+            color: map.get($colors, white);
+            min-height: 64px;
+
+            > .container-fluid {
+                flex-wrap: nowrap;
+            }
+
+            .nav-toggler {
+                cursor: pointer;
+                padding-right: 16px;
+            }
+
+            .nav-search {
+                position: relative;
+                flex: 1 1 auto;
+                max-width: 320px;
+
+                input {
+                    background-color: transparent;
+                    max-width: 100%;
+                    color: map.get($colors, white);
+                    font-weight: 300;
+                    backdrop-filter: blur(2px);
+                    padding: 8px 8px 8px 48px;
+                    border: 0.8px solid rgba(map.get($colors, white), 0.25);
+
+                    &:focus {
+                        box-shadow: none;
+                    }
+
+                    &::placeholder {
+                        font-weight: 100;
+                        color: map.get($colors, white);
+                    }
+                }
+
+                i {
+                    position: absolute;
+                    inset: 0 auto 0 16px;
+                    color: map.get($colors, white);
+                    font-size: map.get($font-sizes, fs2);
+                    z-index: 1;
+                    display: flex;
+                    align-items: center;
+                }
+
+                #nav-search-results {
+                    height: 150px;
+                    width: 100%;
+                    position: absolute;
+                    left: 0;
+                    bottom: -154px;
+                    background-color: rgba(map.get($colors, white), 0.75);
+                    backdrop-filter: blur(5px);
+                    box-shadow: 2px 2px 8px rgba(0,0,0,.15);
+                    overflow: auto;
+                    opacity: 0;
+                    animation: show 1s ease-in-out;
+                    animation-fill-mode: forwards;
+                    padding: 8px;
+
+                    > div {
+                        display: flex;
+                        gap: 16px;
+                        align-items: center;
+                        cursor: pointer;
+
+                        img {
+                            object-fit: contain;
+                        }
+
+                        h6 {
+                            font-size: map.get($font-sizes, fs1);
+                            color: map.get($colors, dark);
+                            font-weight: 300;
+                        }
+                    }
+
+                    > p {
+                        font-size: map.get($font-sizes, fs1);
+                        color: map.get($colors, dark);
+                    }
+
+                    @keyframes show {
+                        from {
+                            opacity: 0;
+                        }
+
+                        to {
+                            opacity: 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        &.scrolled {
+            background-color: rgba($color: map.get($colors,dark), $alpha: 0.9);
+            backdrop-filter: saturate(1.8) blur(20px);
+            box-shadow: 0 3px 9px rgba($color: black, $alpha: 0.16);
+            transition: background 0.5s ease-in-out;
+
+            .alert {
+                display: none;
+            }
+        }
+    }
+
+    main {
+        .page {
+            // 100vh - 2xmargin top of .page-section - footer height
+            min-height: calc(100vh - 192px - 220px);
+
+            .page-section {
+                margin: 96px auto 0;
+                padding: 0 64px;
+                max-width: 1400px;
+
+                .page-section-title {
+                    color: map.get($colors, dark);
+                    margin: 0 0 64px;
+                    font-size: map.get($font-sizes, fs4);
+                    font-weight: 700;
+                }
+
+                @media (width < map.get($breakpoints, md)) {
+                    margin: 48px 0 0;
+                    padding: 0 32px;
+
+                    .page-section-title {
+                        font-size: map.get($font-sizes, fs3);
+                        margin: 0 0 32px;
+                    }
+                }
+
+                @media (width < map.get($breakpoints, sm)) {
+                    padding: 0 16px;
+                }
+            }
+        }
+    }
+
+    footer {
+        min-height: 220px;
+        margin: 96px auto 0;
+        background-color: map.get($colors, dark);
+        color: map.get($colors, white);
+
+        > .container-fluid {
+            padding: 32px 64px;
+            max-width: 1400px;
+            margin: 0 auto;
+
+            h6 {
+                font-size: map.get($font-sizes, fs2);
+                font-weight: 500;
+            }
+
+            a, p {
+                font-size: map.get($font-sizes, fs1);
+                color: map.get($colors, white);
+                font-weight: 300;
+            }
+
+            #payment-methods {
+                img {
+                    height: 24px;
+                }
+            }
+
+            @media (width < map.get($breakpoints, md)) {
+                padding: 32px 32px;
+            }
+
+            @media (width < map.get($breakpoints, sm)) {
+                padding: 32px 16px;
+            }
+        }
+
+        @media (width < map.get($breakpoints, md)) {
+            margin: 48px 0 0;
+        }
+    }
+}

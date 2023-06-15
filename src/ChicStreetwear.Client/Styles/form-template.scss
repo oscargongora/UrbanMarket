@@ -1,0 +1,11 @@
+form {
+    > .form-toolbar {
+        position: sticky;
+        top: 64px;
+        background-color: var(--mud-palette-background);
+        z-index: 1;
+        @media (max-width: 600px) {
+            top: 56px;
+        }
+    }
+}

@@ -1,0 +1,100 @@
+﻿@using ChicStreetwear.Shared.Models.Product;
+<MudCard Class="mt-6">
+    <MudCardHeader Class="pb-0">
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                Variations
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Primary"
+                           OnClick="@(()=>ShowVariationFormDialog())" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTable Items="@Variations" T="VariationModel" Elevation="0"
+                  Dense="true" Hover="true" RowsPerPage="5"
+                  OnRowClick="@(args => ShowVariationFormDialog(args.Item))">
+            <HeaderContent>
+                <MudTh>Attributes</MudTh>
+                <MudTh>Stock</MudTh>
+                <MudTh>Purchased</MudTh>
+                <MudTh>Regular</MudTh>
+                <MudTh>Sale</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate Context="variationContext">
+                <MudTd DataLabel="Attributes">
+                    @(string.Join("/ ", variationContext.Attributes.Select(va => va.Value)))
+                </MudTd>
+                <MudTd DataLabel="Stock">@variationContext.Stock</MudTd>
+                <MudTd DataLabel="PurchasedPrice">@variationContext.PurchasedPrice.ToString("C")</MudTd>
+                <MudTd DataLabel="RegularPrice">@variationContext.RegularPrice.ToString("C")</MudTd>
+                <MudTd DataLabel="SalePrice">@variationContext.SalePrice?.ToString("C")</MudTd>
+
+                <MudTd DataLabel="" Style="text-align:right">
+                    <MudIconButton Class="pa-0" Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                   OnClick="@(async () => await RemoveVariation.InvokeAsync(variationContext))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager HideRowsPerPage="true" />
+            </PagerContent>
+        </MudTable>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Inject]
+    private IDialogService _dialogService { get; set; } = default!;
+
+    [Parameter]
+    public List<AttributeModel> Attributes { get; set; } = new();
+
+    [Parameter]
+    public List<VariationModel> Variations { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<(Guid? id, VariationModel variation)> SaveVariation { get; set; }
+
+    [Parameter]
+    public EventCallback<VariationModel> RemoveVariation { get; set; }
+
+    private async Task ShowVariationFormDialog(VariationModel? variation = null)
+    {
+        if (!Attributes.Any())
+        {
+            await _dialogService.ShowMessageBox("Warning", "First add some attribute");
+            return;
+        }
+
+        VariationFormDialogModel model = new()
+            {
+                Id = variation?.Id ?? Guid.Empty,
+                Attributes = variation?.Attributes?.ToList() ?? Attributes.Select(a => new AttributeVariationModel() { Value = string.Empty, Attribute = new AttributeModel() { Name = a.Name } }).ToList(),
+                Stock = variation?.Stock ?? 0,
+                RegularPrice = variation?.RegularPrice ?? 0,
+                PurchasedPrice = variation?.PurchasedPrice ?? 0,
+                SalePrice = variation?.SalePrice
+            };
+
+        var parameters = new DialogParameters { ["Model"] = model };
+        var options = new DialogOptions() { CloseButton = true };
+        var dialog = await _dialogService.ShowAsync<VariationFormDialog>("Variation Form Dialog", parameters, options);
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            model = (VariationFormDialogModel)result.Data;
+            model.Id = variation?.Id ?? Guid.NewGuid();
+            await SaveVariation.InvokeAsync((model.Id, new()
+                {
+                    Id = model.Id,
+                    Attributes = model.Attributes.ToList(),
+                    Stock = model.Stock,
+                    PurchasedPrice = model.PurchasedPrice,
+                    RegularPrice = model.RegularPrice,
+                    SalePrice = model.SalePrice
+                }));
+        }
+    }
+}

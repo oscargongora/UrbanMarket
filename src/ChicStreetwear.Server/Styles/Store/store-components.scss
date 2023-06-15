@@ -1,0 +1,238 @@
+@use "sass:map";
+@import '_variables.scss';
+
+.navbar-brand-component {
+    margin: 0;
+    padding: 0;
+
+    img {
+        max-width: 100%;
+    }
+
+    @media(width < map.get($breakpoints, sm)) {
+        width: 75%;
+    }
+}
+
+.side-nav-component {
+    display: none;
+
+    @media(width < map.get($breakpoints, xl)) {
+        display: flex;
+        height: 100vh;
+        position: fixed;
+        left: -100vw;
+        top: 0;
+        z-index: 5;
+        transition: left 0.5s ease;
+
+        > .backdrop {
+            display: none;
+            flex: 1 1 auto;
+        }
+
+        > nav {
+            background-color: rgba($color: map.get($colors, dark), $alpha: 0.75);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 3px 9px rgba($color: black, $alpha: 0.16);
+
+            .container-fluid {
+                padding: 32px 32px 0;
+            }
+        }
+
+        &.open {
+            width: 100vw;
+            left: 0px;
+
+            > .backdrop {
+                display: initial;
+            }
+        }
+    }
+}
+
+.rating-component {
+    margin-bottom: 8px;
+
+    > i {
+        color: map.get($colors, yellow);
+    }
+
+    > span {
+        margin-left: 8px;
+    }
+}
+
+.nav-links-component {
+    a {
+        color: map.get($colors, white);
+        font-size: map.get($font-sizes, fs2);
+        font-weight: 300;
+        position: relative;
+        text-transform: capitalize;
+
+        &.active {
+            font-weight: 500;
+        }
+
+        &:focus {
+            color: map.get($colors, white);
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 40%;
+            height: 2px;
+            width: 0;
+            background-color: map.get($colors, white);
+        }
+
+        &:hover {
+            color: map.get($colors, white);
+
+            &::before {
+                width: 20%;
+                transition: width ease 0.25s;
+            }
+        }
+    }
+
+    &.flex-column {
+        a {
+            &::before {
+                left: 16px;
+            }
+        }
+    }
+}
+
+.manage-nav-links-component {
+    flex-wrap: nowrap !important;
+    a {
+        color: map.get($colors, white);
+        font-size: map.get($font-sizes, fs2);
+
+        &:focus, &:hover {
+            color: map.get($colors, white);
+        }
+
+        &[href="/store/cart"] {
+            position: relative;
+
+            > .badge {
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 0.625rem;
+                height: 1.25rem;
+                width: 1.25rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 100%;
+            }
+        }
+
+        &:last-child {
+            padding-right: 0;
+        }
+    }
+}
+
+.product-list-component {
+    > .container-fluid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 32px;
+
+        .card {
+            border: none;
+            background-color: map.get($colors, white);
+
+            img {
+                box-shadow: $card-box-shadow;
+                height: 200px;
+                object-fit: contain;
+
+                &.placeholder-pic {
+                    opacity: 5%;
+                }
+            }
+
+            .card-body {
+                display: flex;
+                flex-direction: column;
+                padding: 16px 0;
+
+                > h6, p, span {
+                    font-size: map.get($font-sizes, fs2);
+                    color: map.get($colors, dark);
+                }
+
+                > p, span, button {
+                    font-weight: 300;
+                }
+
+                h6 {
+                    font-weight: 500;
+                    flex-grow: 1;
+                    cursor: pointer;
+                }
+
+                p {
+                    margin: 0 0 8px;
+                    height: 24px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                button {
+                    font-size: map.get($font-sizes, fs2);
+                    align-self: start;
+                    min-width: 150px;
+
+                    &.btn-cart-remove {
+                        background-color: map.get($colors, dark);
+                        color: map.get($colors, white);
+                    }
+
+                    &.btn-cart-add {
+                        border: 0.8px solid map.get($colors, dark);
+                        background-color: map.get($colors, white);
+                        color: map.get($colors, dark);
+                    }
+                }
+            }
+        }
+    }
+
+    @media (width < map.get($breakpoints, lg)) {
+        > .container-fluid {
+            grid-template-columns: repeat(2,1fr);
+            gap: 16px;
+
+            .card {
+                .card-body {
+
+                    > h6, p, span {
+                        font-size: map.get($font-sizes, fs1);
+                    }
+
+                    button {
+                        font-size: map.get($font-sizes, fs1);
+                    }
+                }
+            }
+        }
+    }
+
+    @media (width < map.get($breakpoints, sm)) {
+        > .container-fluid {
+            grid-template-columns: 1fr
+        }
+    }
+}

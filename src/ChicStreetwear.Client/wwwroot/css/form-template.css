@@ -1,0 +1,13 @@
+form > .form-toolbar {
+  position: sticky;
+  top: 64px;
+  background-color: var(--mud-palette-background);
+  z-index: 1;
+}
+@media (max-width: 600px) {
+  form > .form-toolbar {
+    top: 56px;
+  }
+}
+
+/*# sourceMappingURL=form-template.css.map */

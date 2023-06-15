@@ -1,0 +1,162 @@
+﻿@page "/store/checkout-success"
+@using ChicStreetwear.Application.Common.Interfaces;
+@using ChicStreetwear.Application.Orders.Commands;
+@using ChicStreetwear.Application.Orders.Queries;
+@using ChicStreetwear.Application.Products.Queries;
+@using ChicStreetwear.Server.Options;
+@using ChicStreetwear.Server.Pages.Store.State.Cart;
+@using ChicStreetwear.Server.Services;
+@using ChicStreetwear.Shared.Models.Cart;
+@using ChicStreetwear.Shared.Models.Order;
+@using MediatR;
+@using Microsoft.Extensions.Options;
+@using Stripe;
+@using System.Text.Json;
+
+<div id="checkout-success-page" class="page">
+    @if (Loading)
+    {
+        <div class="page-section">
+            <p>Loading...</p>
+        </div>
+    }
+    else
+    {
+        <div class="page-section">
+            @if (OrderId is not null)
+            {
+                <h2 class="page-section-title">Thanks for your order!</h2>
+                <div class="container-fluid">
+                    <p>Your order: @OrderId</p>
+                    <button class="@($"btn {(OrderCopied? "text-success": "text-dark")}")"
+                    @onclick="HandleCopyOrderClick">
+                        <i class="@($"{(OrderCopied? "fa-solid fa-clipboard-check": "fa-solid fa-clipboard")}")"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <NotFound />
+            }
+        </div>
+    }
+</div>
+
+
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "payment_intent")]
+    public string? PaymentIntent { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "payment_intent_client_secret")]
+    public string? PaymentIntentClientSecret { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "redirect_status")]
+    public string? RedirectStatus { get; set; }
+
+    [Inject]
+    public IOptionsSnapshot<StripeOptions> StripeOptions { get; set; } = default!;
+
+    [Inject]
+    public CartService CartService { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private ISender Sender { get; set; } = default!;
+
+    [Inject]
+    public IJSRuntime _jSRuntime { get; set; } = default!;
+
+    private bool Loading = true;
+
+    private bool OrderCopied = false;
+
+    private Guid? OrderId = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StripeConfiguration.ApiKey = StripeOptions.Value.ApiKey;
+
+            try
+            {
+                if (PaymentIntent is not null && PaymentIntentClientSecret is not null)
+                {
+                    var orderResult = await Sender.Send(new GetOrderByPaymentIntentQuery()
+                        {
+                            PaymentIntent = PaymentIntent,
+                            PaymentIntentClientSecret = PaymentIntentClientSecret
+                        });
+
+                    if (orderResult.Data is null)
+                    {
+                        PaymentIntentService paymentIntentService = new();
+                        var paymentIntent = await paymentIntentService.GetAsync(PaymentIntent);
+                        var cartModel = await CartService.GetCartFromDatabaseProducts();
+                        if (cartModel.Products.Any())
+                        {
+                            CreateOrderCommand createOrderCommand = new()
+                                {
+                                    Products = cartModel.Products.Select(cp => new OrderProductModel()
+                                    {
+                                        ProductId = cp.ProductId,
+                                        VariationId = cp.VariationId,
+                                        Attributes = cp.Attributes.Select(cpa => new OrderProductAttributeModel() { Name = cpa.Name, Value = cpa.Value }).ToList(),
+                                        Name = cp.Name,
+                                        Description = cp.Description,
+                                        Quantity = cp.Quantity,
+                                        Price = cp.Price,
+                                        SellerId = cp.SellerId
+                                    }).ToList(),
+                                    Total = cartModel.Total,
+                                    DeliveredAddress = new AddressModel()
+                                    {
+                                        FullName = paymentIntent.Shipping.Name,
+                                        Email = paymentIntent.ReceiptEmail,
+                                        AddressLine1 = paymentIntent.Shipping.Address.Line1,
+                                        AddressLine2 = paymentIntent.Shipping.Address.Line2,
+                                        Country = paymentIntent.Shipping.Address.Country,
+                                        City = paymentIntent.Shipping.Address.City,
+                                        State = paymentIntent.Shipping.Address.State,
+                                        PostalCode = paymentIntent.Shipping.Address.PostalCode
+                                    },
+                                    PaymentIntent = PaymentIntent,
+                                    PaymentIntentClientSecret = PaymentIntentClientSecret,
+                                    ReceiptEmail = paymentIntent.ReceiptEmail
+                                };
+
+                            var orderIdResult = await Sender.Send(createOrderCommand);
+                            if (!orderIdResult.HasErrors)
+                            {
+                                OrderId = orderIdResult.Data;
+                                await CartService.ClearCart();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        OrderId = orderResult.Data.Id;
+                    }
+                }
+            }
+            catch (StripeException se)
+            {
+            }
+
+            Loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task HandleCopyOrderClick()
+    {
+        await _jSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", OrderId);
+        OrderCopied = true;
+    }
+}

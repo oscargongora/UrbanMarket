@@ -1,0 +1,46 @@
+﻿@using ChicStreetwear.Shared.Models.Common;
+
+@if (CoverPicture is not null)
+{
+    <MudImage Src="@CoverPicture.ThumbnailUrl"
+          Alt="Product cover picture"
+          Class="file-upload-item file-upload-first-item"
+              onclick="@(()=> OnPictureModelClick.InvokeAsync(CoverPicture))" />
+}
+
+@if (SelectedFiles is not null)
+{
+    @foreach (var fileUrl in SelectedFiles)
+    {
+        <MudImage Src="@fileUrl"
+          Class="file-upload-item"
+                  onclick="@(()=> OnSelectedPictureClick.InvokeAsync(fileUrl))" />
+    }
+}
+
+@if (Pictures is not null)
+{
+    foreach (var picture in Pictures)
+    {
+        <MudImage Src="@picture.ThumbnailUrl" Class="file-upload-item"
+                  onclick="@(()=> OnPictureModelClick.InvokeAsync(picture))" />
+    }
+}
+
+
+@code {
+    [Parameter]
+    public PictureModel? CoverPicture { get; set; }
+
+    [Parameter]
+    public List<PictureModel>? Pictures { get; set; }
+
+    [Parameter]
+    public List<string>? SelectedFiles { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSelectedPictureClick { get; set; }
+
+    [Parameter]
+    public EventCallback<PictureModel> OnPictureModelClick { get; set; }
+}

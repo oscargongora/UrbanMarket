@@ -1,0 +1,89 @@
+﻿@page "/store/cart"
+@using System.Globalization;
+
+<div id="cart-page" class="page">
+    <div class="page-section">
+        <h2 class="page-section-title">Cart</h2>
+        <div class="container-fluid">
+            @if (Model is null)
+            {
+                <span>Loading...</span>
+            }
+            else
+            {
+                if (Model.Products.Any())
+                {
+                    <div id="cart-products">
+                        @foreach (var item in Model.Products)
+                        {
+                            <div class="card">
+                                <div class="img-container ">
+                                    <img src="@(item?.ThumbnailUrl ?? "assets/tag-solid.svg")">
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">@item.Name</h6>
+                                    @if (item.VariationId is not null)
+                                    {
+                                        <p>@(string.Join(", ", item.Attributes.Select(a => $"{a.Name}: {a.Value}")))</p>
+                                    }
+                                    <p class="card-text">@item.Price.ToString("C2", CultureInfo.CreateSpecificCulture("en-US"))</p>
+                                    <div class="quantity-container">
+                                        <InputNumber class="form-control" @bind-Value="@item.Quantity"
+                                                     min="1" max="@item.MaxQuantity"
+                                        @oninput="(eventArgs)=>HandleOnQuantityInput(item, eventArgs)" />
+                                        <div class="form-text">
+                                            Only @item.MaxQuantity left
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-cart-remove" onclick="@(()=>UpdateProductQuantity(item, 0))">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div id="cart-summary" class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Order summary</h6>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text">@(Model.Products.Count) items</p>
+                                <p>@Model.Total.ToString("C2", CultureInfo.CreateSpecificCulture("en-US"))</p>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text">
+                                    Sales Tax
+                                </p>
+                                <p>-</p>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text">
+                                    Delivery
+                                </p>
+                                <p>FREE</p>
+                            </div>
+                            <hr />
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text">
+                                    <b>Total</b>
+                                </p>
+                                <p><b>@Model.Total.ToString("C2",CultureInfo.CreateSpecificCulture("en-US"))</b></p>
+                            </div>
+                            <button class="btn btn-dark w-100" @onclick="HandleCheckoutButtonClick">
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p>Your shopping cart is empty.</p>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+}

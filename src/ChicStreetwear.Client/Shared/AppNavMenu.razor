@@ -1,0 +1,23 @@
+﻿@using ChicStreetwear.Client.Helpers
+
+<MudNavMenu Rounded="true" Margin="Margin.Normal" Color="Color.Primary" Class="pa-2">
+    <MudNavLink Href="@RoutingHelper.Dashboard" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+
+    <AuthorizeView Roles="@(IdentityDefaults.ADMINISTRATOR_ROLE)">
+        <Authorized>
+            <MudNavLink Href="@RoutingHelper.Category.ListPage" Icon="@Icons.Material.Filled.Category">Categories</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
+    <MudNavLink Href="@RoutingHelper.Product.ListPage" Icon="@Icons.Material.Filled.Label">Products</MudNavLink>
+    <MudNavLink Href="@RoutingHelper.Order.ListPage" Icon="@Icons.Material.Filled.ShoppingBag">Orders</MudNavLink>
+
+    @*    <MudNavLink Href="counter" Icon="@Icons.Material.Filled.Storage">Counter</MudNavLink>
+    <MudNavLink Href="fetchdata" Icon="@Icons.Material.Filled.Science">Fetch data</MudNavLink>*@
+
+    @*    <AuthorizeView Roles="@(IdentityDefaults.ADMINISTRATOR_ROLE)">
+    <Authorized>
+    <MudNavLink Href="fetchdata" Icon="@Icons.Material.Filled.Science">Fetch data</MudNavLink>
+    </Authorized>
+    </AuthorizeView>*@
+</MudNavMenu>

@@ -1,0 +1,91 @@
+@using ChicStreetwear.Application.Others;
+@using ChicStreetwear.Server.Pages.Store.State.Layout;
+@using ChicStreetwear.Shared.Models.Others;
+@using MediatR;
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<nav class="navbar">
+    <div class="container-fluid">
+
+        <div class="nav-toggler d-xl-none" onclick="@(()=> Dispatcher.Dispatch(new ToggleSideNavVisibilityAction()))">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+
+        <div class="d-none d-xl-block">
+            <NavBrand />
+        </div>
+
+        <div class="d-none d-xl-block">
+            <NavLinks />
+        </div>
+
+        <div class="nav-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input class="form-control" type="text" placeholder="Search"
+                   value="@SearchText" @oninput="HandleSearchChange" />
+            @if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                <div id="nav-search-results">
+                    @if (searchResults.Any())
+                    {
+                        foreach (var item in searchResults)
+                        {
+                            <div @onclick="@(()=>HandleSearchResultClick(item))">
+                                @if (item.Type.Equals("Product"))
+                                {
+                                    <img src="@(item.ThumbnailUrl?? "assets/tag-solid.svg")"
+                                         height="50" width="50" />
+                                }
+                                <h6>@item.Title</h6>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>There are no results for the search</p>
+                    }
+                </div>
+            }
+        </div>
+        <ManageNavLinks />
+    </div>
+</nav>
+
+@code {
+    [Inject]
+    public IDispatcher Dispatcher { get; set; } = default!;
+
+    [Inject]
+    public ISender Sender { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager Navigation { get; set; } = default!;
+
+    List<SearchNavQueryResponseModel> searchResults = new();
+
+    public string SearchText { get; set; } = string.Empty;
+
+    private async Task HandleSearchChange(ChangeEventArgs eventArgs)
+    {
+        SearchText = (string)(eventArgs?.Value ?? string.Empty);
+        var searchResult = await Sender.Send(new SearchNavQuery() { SearchText = SearchText });
+        if (!searchResult.HasErrors)
+        {
+            searchResults = searchResult.Data.ToList();
+        }
+    }
+
+    private void HandleSearchResultClick(SearchNavQueryResponseModel item)
+    {
+        SearchText = string.Empty;
+        searchResults.Clear();
+        if (item.Type.Equals("Category"))
+        {
+            Navigation.NavigateTo($"/store/products?CategoryId={item.Id}");
+        }
+        if (item.Type.Equals("Product"))
+        {
+            Navigation.NavigateTo($"/store/product/{item.Id}");
+        }
+    }
+}

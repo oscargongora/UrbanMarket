@@ -1,0 +1,24 @@
+﻿@page "/manage/categories/create"
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Client.Models;
+@using ChicStreetwear.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = IdentityDefaults.ADMINISTRATOR_ROLE)]
+
+<ChicStreetwear.Client.Components.FormTemplate Model="@model" TModel="CreateCategoryModel" Routing="@RoutingHelper.Category">
+    <FieldsFragment>
+        <MudTextField Required="true" Label="Name" HelperText="@($"Max. {Constants.Fields.NAME_MAXLENGTH} characters")"
+                      @bind-Value="model.Name" For="@(() => model.Name)" />
+        <MudTextField Required="true" Label="Description" Class="mt-3" HelperText="@($"Max. {Constants.Fields.DESCRIPTION_MAXLENGTH} characters")"
+                      @bind-Value=" model.Description" For="@(() => model.Description)" />
+    </FieldsFragment>
+</ChicStreetwear.Client.Components.FormTemplate>
+
+@code {
+    public CreateCategoryModel? model;
+
+    protected override void OnInitialized()
+    {
+        model = new() { Name = string.Empty, Description = string.Empty };
+    }
+}

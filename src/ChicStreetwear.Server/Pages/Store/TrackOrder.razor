@@ -1,0 +1,141 @@
+﻿@page "/store/trackorder/{orderId:guid?}"
+@using ChicStreetwear.Application.Orders.Queries;
+@using ChicStreetwear.Shared.Models.Order;
+@using MediatR;
+@using System.Globalization;
+
+<div id="trackorder-page" class="page">
+    <div class="page-section">
+        <h2 class="page-section-title">Track order</h2>
+        <div class="container-fluid">
+            @if (orderId is null)
+            {
+                <div id="search-form">
+                    <div>
+                        <InputText class="form-control" @bind-Value="searchOrder" />
+                        @if (!string.IsNullOrWhiteSpace(errors))
+                        {
+                            <span class="text-danger">@errors</span>
+                        }
+                    </div>
+                    <button class="btn btn-dark" @onclick="HandleTrackOrderSubmit">
+                        Search
+                    </button>
+                </div>
+            }
+            else
+            {
+                if (order is null)
+                {
+                    if (string.IsNullOrWhiteSpace(errors))
+                    {
+                        <p>Loading...</p>
+                    }
+                    else
+                    {
+                        <span class="text-danger">@errors</span>
+                    }
+                }
+                else
+                {
+                    <h3>@order.Id</h3>
+                    <dl class="dl-horizontal">
+                        <dt>
+                            Name
+                        </dt>
+                        <dd>
+                            @order.DeliveredAddress.ContactToString
+                        </dd>
+                        <dt>
+                            Address
+                        </dt>
+                        <dd>
+                            @order.DeliveredAddress.AddressToString
+                        </dd>
+                        <dt>
+                            Placed Date
+                        </dt>
+                        <dd>
+                            @order.PlacedDate
+                        </dd>
+                        <dt>
+                            Dispatched Date
+                        </dt>
+                        <dd>
+                            @($"{order.DispatchedDate?.ToString() ?? "N\\A"}")
+                        </dd>
+                        <dt>
+                            Delivered Date
+                        </dt>
+                        <dd>
+                            @($"{order.DeliveredDate?.ToString() ?? "N\\A"}")
+                        </dd>
+                    </dl>
+                    <br />
+                    <h4>Products</h4>
+                    <div style="display: flex;">
+                        @foreach (var item in order.Products)
+                        {
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title" @onclick="()=>HandleCardTitleClick(item.ProductId)"
+                                        style="cursor:pointer;">
+                                        @item.Name
+                                    </h6>
+                                    <h6>
+                                        @item.Price.ToString("c2", CultureInfo.CreateSpecificCulture("en-US"))
+                                    </h6>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Inject]
+    public ISender Sender { get; set; } = default!;
+
+    [Inject]
+    public NavigationManager Navigation { get; set; } = default!;
+
+    [Parameter]
+    public Guid? orderId { get; set; }
+
+    public string? searchOrder { get; set; }
+
+    public OrderModel? order { get; set; } = null;
+
+    private string errors = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (orderId is not null)
+        {
+            var orderResult = await Sender.Send(new GetOrderByIdQuery() { Id = (Guid)orderId!, IsAdministrator = true });
+            if (orderResult.HasErrors)
+            {
+                errors = orderResult.Errors.FirstOrDefault()!.Message;
+            }
+            else
+            {
+                order = orderResult.Data;
+            }
+        }
+    }
+
+    private void HandleTrackOrderSubmit()
+    {
+        Navigation.NavigateTo($"/store/trackorder/{searchOrder}");
+    }
+
+    private void HandleCardTitleClick(Guid productId)
+    {
+        Navigation.NavigateTo($"/store/product/{productId}");
+    }
+}

@@ -1,0 +1,29 @@
+﻿<div class="rating-component">
+    @{
+        int i = 0;
+        while (i < Math.Floor(Value))
+        {
+            <i class="fa-solid fa-star"></i>
+            i++;
+        }
+        if (Value - i > 0)
+        {
+            <i class="fa-solid fa-star-half-stroke"></i>
+            i++;
+        }
+        while (i < 5)
+        {
+            <i class="fa-regular fa-star"></i>
+            i++;
+        }
+    }
+    <span>(@Count)</span>
+</div>
+
+@code {
+    [Parameter]
+    public float Value { get; set; }
+
+    [Parameter]
+    public int Count { get; set; }
+}

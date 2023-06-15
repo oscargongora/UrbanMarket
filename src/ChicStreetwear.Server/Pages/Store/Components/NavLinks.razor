@@ -1,0 +1,20 @@
+﻿@using ChicStreetwear.Shared.Enums;
+<ul class="@($"nav-links-component nav {(DisplayColumn? "flex-column": "")}")">
+    <NavLink class="nav-link" href="/store" Match="NavLinkMatch.All">
+        Store
+    </NavLink>
+    <NavLink class="nav-link" href=@($"/store/products?Sort={ProductSortOption.Newest}")>
+        New in
+    </NavLink>
+    <NavLink class="nav-link" href=@($"/store/products?Sort={ProductSortOption.BestSeller}")>
+        Trending
+    </NavLink>
+    <NavLink class="nav-link" href="/store/sale">
+        Sale
+    </NavLink>
+</ul>
+
+@code {
+    [Parameter]
+    public bool DisplayColumn { get; set; } = false;
+}

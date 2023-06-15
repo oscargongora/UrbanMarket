@@ -1,0 +1,17 @@
+* {
+    font-family: "Roboto", sans-serif;
+}
+
+body {
+    background-color: #fafaff;
+}
+
+@import 'store-components.scss';
+@import 'store-layout.scss';
+@import 'index-page.scss';
+@import 'cart-page.scss';
+@import 'checkout-page.scss';
+@import 'checkout-success-page.scss';
+@import 'products-page.scss';
+@import 'product-page.scss';
+@import 'track-order-page.scss';

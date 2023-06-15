@@ -1,0 +1,22 @@
+﻿@using ChicStreetwear.Server.Pages.Store.State.Cart;
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<ul class="nav manage-nav-links-component">
+    <NavLink class="nav-link" href="/store/cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        @if (CartState.Value.Products.Count > 0)
+        {
+            <span class="badge bg-danger">
+                @CartState.Value.Products.Count
+            </span>
+        }
+    </NavLink>
+    <NavLink class="nav-link" href="/manage">
+        <i class="fa-solid fa-user"></i>
+    </NavLink>
+</ul>
+
+@code {
+    [Inject]
+    private IState<CartState> CartState { get; set; } = default!;
+}

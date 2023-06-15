@@ -1,0 +1,185 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#cart-page {
+    margin: 96px auto 0;
+
+    .page-section {
+        > .container-fluid {
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 32px;
+
+            #cart-products {
+                display: flex;
+                flex-direction: column;
+                gap: 32px;
+
+                .card {
+                    height: 290px;
+                    border: none;
+                    background-color: map.get($colors, white);
+                    display: flex;
+                    flex-flow: row nowrap;
+
+                    .img-container {
+                        width: 50%;
+                        box-shadow: $card-box-shadow;
+
+                        img {
+                            height: 100%;
+                            width: 100%;
+                            object-fit: contain;
+                        }
+                    }
+
+                    .card-body {
+                        padding: 16px;
+                        width: 50%;
+
+                        h6, p {
+                            color: map.get($colors, dark);
+                        }
+
+                        h6 {
+                            font-size: map.get($font-sizes, fs2);
+                            font-weight: 500;
+                        }
+
+                        p {
+                            font-size: map.get($font-sizes, fs2);
+                        }
+
+                        .quantity-container {
+                            display: flex;
+                            flex-direction: column;
+                            margin: 0 0 16px;
+
+                            .form-control {
+                                max-width: 85px;
+                            }
+
+                            > p {
+                                margin: 0 8px auto;
+                            }
+                        }
+
+                        .btn-cart-remove {
+                            font-size: map.get($font-sizes, fs2);
+                            background-color: map.get($colors, dark);
+                            color: map.get($colors, white);
+                        }
+                    }
+                }
+            }
+
+            #cart-summary {
+                border: none;
+                align-self: start;
+                background-color: map.get($colors, white);
+                box-shadow: $card-box-shadow;
+                width: 35%;
+
+                .card-body {
+                    h6 {
+                        font-size: map.get($font-sizes, fs2);
+                        font-weight: 500;
+                    }
+
+                    p {
+                        font-size: map.get($font-sizes, fs2);
+                    }
+                }
+            }
+
+            @media (width < map.get($breakpoints, lg)) {
+
+                #cart-products {
+                    .card {
+                        flex-flow: column nowrap;
+                        height: auto;
+
+                        .img-container {
+                            height: 290px;
+                            width: 100%;
+                        }
+
+                        .card-body {
+                            padding: 16px 0;
+                            width: 100%;
+                        }
+                    }
+                }
+
+                #cart-summary {
+                    width: 40%;
+                }
+            }
+
+            @media (width < map.get($breakpoints, md)) {
+                flex-flow: column nowrap;
+
+                #cart-products {
+                    .card {
+                        height: 290px;
+                        flex-flow: row nowrap;
+
+                        .img-container {
+                            width: 50%;
+                            height: auto;
+                        }
+
+                        .card-body {
+                            padding: 16px;
+                            width: 50%;
+                        }
+                    }
+                }
+
+                #cart-summary {
+                    width: 100%;
+                }
+            }
+
+            @media (width < map.get($breakpoints, sm)) {
+                #cart-products {
+                    .card {
+                        flex-flow: column nowrap;
+                        height: auto;
+
+                        .img-container {
+                            width: 100%;
+                            height: 200px;
+                        }
+
+                        .card-body {
+                            padding: 16px 0;
+                            width: 100%;
+
+                            h6 {
+                                font-size: 16px;
+                            }
+
+                            p {
+                                font-size: 14px;
+                            }
+                        }
+                    }
+                }
+
+                #cart-summary {
+                    .card-body {
+                        h6 {
+                            font-size: 16px;
+                        }
+
+                        p {
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

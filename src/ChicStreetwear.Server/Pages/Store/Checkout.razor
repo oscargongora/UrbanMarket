@@ -1,0 +1,57 @@
+﻿@page "/store/checkout/{ClientSecret}"
+@using ChicStreetwear.Server.Options;
+@using Microsoft.Extensions.Options;
+
+<div id="checkout-page" class="page">
+    <div class="page-section">
+        <h2 class="page-section-title">Checkout</h2>
+        <div class="container-fluid">
+            <form id="payment-form" @onsubmit="HandleSubmit">
+                <div style="margin-bottom: 16px;">
+                    <label for="email" class="form-label" style="font-size: 0.9rem;">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com"
+                           style="border-radius: 5px !important; padding: 0.65rem 0.75rem !important;">
+                </div>
+                <div id="shipping-address-element" style="margin-bottom: 16px;">
+                    <!--Stripe.js injects the Address Element-->
+                </div>
+                <div id="payment-element" style="margin-bottom: 16px;">
+                    <!--Stripe.js injects the Payment Element-->
+                </div>
+                <button id="submit" class="btn btn-dark w-100" type="submit">
+                    <div class="spinner hidden" id="spinner"></div>
+                    <span id="button-text">Pay now</span>
+                </button>
+                <div id="payment-message" class="hidden"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    public IOptionsMonitor<StripeOptions> StripeOptions { get; set; } = default!;
+
+    [Inject]
+    public IJSRuntime _jSRuntime { get; set; } = default!;
+
+    private IJSObjectReference? _module = null;
+
+    [Parameter]
+    public string ClientSecret { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = _module ?? await _jSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Store/Checkout.razor.js");
+            await _module.InvokeVoidAsync("initializeCheckout", ClientSecret, StripeOptions.CurrentValue.PublishableKey);
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _module = _module ?? await _jSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Store/Checkout.razor.js");
+        await _module.InvokeVoidAsync("handleSubmitCheckout", StripeOptions.CurrentValue.PaymentIntentCreateOptions.SuccessUrl);
+    }
+}

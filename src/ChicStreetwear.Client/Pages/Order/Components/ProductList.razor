@@ -1,0 +1,101 @@
+﻿@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Models.Order;
+
+<MudDataGrid T="OrderProductModel" Items="Products"
+             SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilter"
+             RowClick="@OnRowClicked"
+             Hover="true" FixedHeader="true" FixedFooter="true">
+    <ToolBarContent>
+
+        <MudTextField @bind-Value="SearchText"
+                      Immediate="true"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      AdornmentColor="Color.Secondary"
+                      Placeholder="Search"
+                      Clearable="true" />
+    </ToolBarContent>
+
+    <Columns>
+        <HierarchyColumn T="OrderProductModel" />
+        <PropertyColumn Property="product => product.Name" />
+        <PropertyColumn Property="product => product.Quantity">
+            <FooterTemplate>
+                @context.Items.Aggregate(0, (total, current) => current.Quantity + total)
+            </FooterTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="product => product.Price" Format="C" />
+        <PropertyColumn Property="product => product.SubTotal" Title="Sub Total" Format="C">
+            <FooterTemplate>
+                $@context.Items.Aggregate(decimal.Zero, (total, current) => current.SubTotal + total)
+            </FooterTemplate>
+        </PropertyColumn>
+    </Columns>
+    <ChildRowContent>
+        <MudStack>
+            <MudText Typo="Typo.subtitle1">
+                Product
+            </MudText>
+            <MudText Typo="Typo.body2">
+                @context.Item.ProductId
+            </MudText>
+            @if (context.Item.VariationId is not null)
+            {
+                <MudText Typo="Typo.subtitle1">
+                    Variation
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    @context.Item.VariationId
+                </MudText>
+                <MudText Typo="Typo.subtitle1">
+                    Attributes
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    @string.Join(", ", context.Item.Attributes.Select(a => $"{a.Name}: {a.Value}"))
+                </MudText>
+            }
+
+        </MudStack>
+    </ChildRowContent>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudDataGridPager T="OrderProductModel" PageSizeOptions="@(new int[]{5})" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    public NavigationManager Navigation { get; set; } = default!;
+
+    [Parameter]
+    public List<OrderProductModel> Products { get; set; } = new();
+
+    private string SearchText = string.Empty;
+
+    public RoutingModel? Routing { get; set; } = RoutingHelper.Product;
+
+
+    void OnRowClicked(DataGridRowClickEventArgs<OrderProductModel> args)
+    {
+        Navigation.NavigateTo(Routing!.EditPage(args.Item.ProductId));
+    }
+
+    private Func<OrderProductModel, bool> QuickFilter => op =>
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
+
+        if (op.ProductId.ToString().Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (op.VariationId?.ToString().Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? true)
+            return true;
+        if (op.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    };
+}

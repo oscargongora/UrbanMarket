@@ -1,0 +1,9 @@
+@use "sass:map";
+
+$breakpoints: ( xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px, xxl: 1400px );
+
+$colors: (dark: #1c1c1c, light: #ecebe4, white: #fafaff, yellow: #fca311, red: #d90429);
+
+$font-sizes: ( fs1: 0.875rem, fs2: 1rem, fs3: 1.5rem, fs4: 2rem, fs5: 2.5rem, fs6: 3rem);
+
+$card-box-shadow: 2px 2px 8px rgba(0,0,0,0.15);

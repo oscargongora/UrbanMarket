@@ -1,0 +1,48 @@
+@import "form-template.scss";
+
+.file-upload-container {
+    display: grid;
+    gap: 4px 4px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 150px;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 150px;
+
+    > .file-upload-first-item {
+        grid-column: 1 / 3;
+        grid-row: 1 / 3;
+    }
+
+    > .file-upload-item {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    > .file-upload-buttom {
+        .mud-paper {
+            height: 150px;
+        }
+    }
+
+    &.no-children {
+        grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 600px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.mud-checkbox {
+    > span {
+        padding: 0;
+        margin-right: 8px;
+    }
+}
+
+/*@media (max-width: 700px) {
+    .file-upload-container {
+        background-color: red;
+    }
+}*/

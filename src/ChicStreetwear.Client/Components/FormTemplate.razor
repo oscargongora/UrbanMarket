@@ -1,0 +1,126 @@
+﻿@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Client.Models;
+@using ChicStreetwear.Shared.Models;
+
+@typeparam TModel
+
+@inject ISnackbar _snackbar
+@inject IDialogService _dialogService
+@inject HttpClient _httpClient
+@inject NavigationManager Navigation
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.False" Style="max-width: 700px; margin: 0 auto; padding: 0;">
+
+        <EditForm EditContext="editContext" OnValidSubmit="OnValidSubmitAsync" class="ma-4 ma-sm-6">
+            <FluentValidationValidator DisableAssemblyScanning="true" />
+            <FormToolbarTemplate Id="Id" OnDeleteClick="OnDeleteClick" Routing="Routing" />
+            <MudCard>
+                <MudCardContent>
+                    <ValidationSummary />
+                    @FieldsFragment
+                </MudCardContent>
+            </MudCard>
+        </EditForm>
+    </MudContainer>
+
+    <NavigationLock ConfirmExternalNavigation="@(editContext!.IsModified())" OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+}
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    [Parameter]
+    public TModel? Model { set; get; }
+    public EditForm? editForm { set; get; }
+    public EditContext? editContext { get; set; }
+
+    [Parameter]
+    public RenderFragment? FieldsFragment { set; get; }
+
+    [Parameter]
+    public RoutingModel? Routing { get; set; }
+
+    private bool isLoading;
+    private void SetIsLoading() => isLoading = true;
+    private void UnSetIsLoading() => isLoading = false;
+
+    protected override void OnInitialized()
+    {
+        SetIsLoading();
+        editContext = new(Model!);
+        UnSetIsLoading();
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        try
+        {
+            var response = Id is null ?
+            await _httpClient.PostAsJsonAsync(Routing!.ApiEndpoint, Model) :
+            await _httpClient.PutAsJsonAsync(Routing!.PutApiEndpoint((Guid)Id), Model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                editContext!.MarkAsUnmodified();
+                if (Id is null)
+                {
+                    var id = await response.Content.ReadFromJsonAsync<Guid>();
+                    Navigation.NavigateTo(Routing.EditPage(id));
+                }
+            }
+            else
+            {
+                _snackbar.Add(await response.Content.ReadAsStringAsync(), Severity.Error);
+            }
+            _snackbar.Add($"{Routing.EntityName} saved", Severity.Success);
+
+        }
+        catch (Exception exception)
+        {
+            _snackbar.Add(exception.Message, Severity.Error);
+        }
+    }
+
+    private async Task OnDeleteClick()
+    {
+        var isConfirmed = await _dialogService.ShowMessageBox("Warning", "Are you sure you want to delete this category?", "Yes", "No");
+
+        if (isConfirmed is true && Id is not null)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync(Routing!.GetByIdApiEndpoint((Guid)Id));
+                if (response.IsSuccessStatusCode)
+                {
+                    editContext!.MarkAsUnmodified();
+                    Navigation.NavigateTo(Routing.ListPage);
+                    _snackbar.Add($"{Routing!.EntityName} deleted", Severity.Success);
+                }
+            }
+            catch (Exception exception)
+            {
+                _snackbar.Add(exception.Message, Severity.Error);
+            }
+        }
+    }
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext locationChanging)
+    {
+        if (editContext!.IsModified())
+        {
+            var isConfirmed = await _dialogService.ShowMessageBox("Warning", "Changes you made may not be saved. Do you want to leave the page?", "Yes", "No");
+            if (isConfirmed is false)
+            {
+                locationChanging.PreventNavigation();
+            }
+        }
+    }
+
+}

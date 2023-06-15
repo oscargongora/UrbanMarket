@@ -1,0 +1,58 @@
+﻿@page "/manage/products"
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Models.Common;
+@using ChicStreetwear.Shared.Models.Product;
+@using Microsoft.AspNetCore.Authorization;
+
+@attribute [Authorize]
+
+<ChicStreetwear.Client.Components.DataGridTemplate TModel="ProductModel"
+                                                   Routing="@RoutingHelper.Product" Dense="true"
+                                                   Title="Products">
+    <ColumnsFragment>
+        <PropertyColumn Property="product => product.CoverPicture" Title="" T="ProductModel" TProperty="PictureModel">
+            <CellTemplate>
+                <MudAvatar Size="Size.Large" Style="height:64px; width:64px;">
+                    @if (context.Item.CoverPicture is null)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Image" />
+                    }
+                    else
+                    {
+                        <MudImage Src="@context.Item.CoverPicture.ThumbnailUrl" />
+                    }
+                </MudAvatar>
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="product => product.Name" T="ProductModel" TProperty="string"
+                        Sortable="true" />
+        <PropertyColumn Property="product => product.Description" T="ProductModel" TProperty="string" Sortable="true" />
+        <PropertyColumn Property="product => product.Stock" T="ProductModel" TProperty="int?" Sortable="true" />
+
+        <PropertyColumn Property="product => product.Rating" T="ProductModel" TProperty="RatingModel"
+                        Sortable="true">
+            <CellTemplate>
+                <MudRating Size="@Size.Small"
+                           SelectedValue="@((int) context.Item.Rating.Value)"
+                           ReadOnly="true" />
+            </CellTemplate>
+        </PropertyColumn>
+
+        <PropertyColumn Property="product => product.Status" T="ProductModel" TProperty="ProductStatusModel"
+                        Sortable="true" Filterable="true">
+            <CellTemplate>
+                @if (context.Item.Status.Equals(ProductStatusModel.Active))
+                {
+                    <MudChip Color="Color.Success">Active</MudChip>
+                }
+                else
+                {
+                    <MudChip Color="Color.Warning">Draft</MudChip>
+                }
+            </CellTemplate>
+        </PropertyColumn>
+    </ColumnsFragment>
+</ChicStreetwear.Client.Components.DataGridTemplate>
+
+@code {
+}

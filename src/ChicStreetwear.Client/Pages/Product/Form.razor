@@ -1,0 +1,198 @@
+﻿@page "/manage/products/create"
+@page "/manage/products/edit/{id:guid}"
+@using ChicStreetwear.Client.Components
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Client.Pages.Product.Pictures
+@using ChicStreetwear.Client.Pages.Product.Attribute
+@using ChicStreetwear.Client.Pages.Product.Variation
+@using ChicStreetwear.Shared;
+@using ChicStreetwear.Shared.Models.Product;
+@using ChicStreetwear.Shared.Helpers;
+@using Microsoft.AspNetCore.Authorization;
+
+@attribute [Authorize]
+
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.False" Style="max-width: 960px; margin: 0 auto;">
+        <EditForm class="preventSubmitOnEnter" EditContext="EditContext" OnValidSubmit="OnValidSubmitAsync" novalidate>
+            <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="true" />
+            <FormToolbarTemplate Id="Id" OnDeleteClick="OnDeleteClick" Routing="Routing" />
+            <MudGrid Class="mt-3">
+                <MudItem xs="12" sm="8">
+                    <MudCard>
+                        <MudCardContent>
+                            <ValidationSummary />
+
+                            <MudTextField Required="true" Label="Name"
+                                          HelperText="@($"Max. {Constants.Fields.NAME_MAXLENGTH} characters")"
+                            @bind-Value="Model.Name" For="@(() => Model.Name)" />
+
+                            <MudTextField Required="true" Label="Description"
+                                          HelperText="@($"Max. {Constants.Fields.DESCRIPTION_MAXLENGTH} characters")"
+                            @bind-Value=" Model.Description" For="@(() => Model.Description)" Lines="2" />
+                            <MudCheckBox @bind-Checked="@Model.HasAttributes" Class="mt-4" Label="Has attributes?"
+                                         Color="Color.Primary">
+                            </MudCheckBox>
+                        </MudCardContent>
+                    </MudCard>
+
+                    @*Pricing*@
+                    @if (!Model.HasAttributes)
+                    {
+                        <MudCard Class="mt-6">
+                            <MudCardHeader Class="pb-0">
+                                <MudText Typo="Typo.h6">Pricing</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudGrid Spacing="3">
+                                    <MudItem xs="12" sm="4">
+                                        <MudNumericField Label="Price" Min="0" Required="true"
+                                                         Immediate="false" Format="C" Culture="@EnUs" T="decimal?"
+                                                         HelperText=""
+                                        @bind-Value="Model.RegularPrice" For="@(()=>Model.RegularPrice)"
+                                                         HideSpinButtons="true" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudNumericField Label="Sale Price" Min="0"
+                                                         Immediate="false" Format="C" Culture="@EnUs" T="decimal?"
+                                                         HelperText=""
+                                        @bind-Value="Model.SalePrice" For="@(()=>Model.SalePrice)"
+                                                         HideSpinButtons="true" />
+                                    </MudItem>
+                                </MudGrid>
+                                <MudGrid Spacing="3">
+                                    <MudItem xs="12" sm="4">
+                                        <MudNumericField Label="Purchased Price" Min="0" Required="true"
+                                                         Immediate="false" Format="C" Culture="@EnUs" T="decimal?"
+                                                         HelperText=""
+                                        @bind-Value="Model.PurchasedPrice" For="@(()=>Model.PurchasedPrice)"
+                                                         HideSpinButtons="true" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudTextField Value="@PricingHelper.Profit(Model.SalePrice, Model.RegularPrice, Model.PurchasedPrice)"
+                                                      Label="Profit" Format="C" Culture="@EnUs" T="decimal?"
+                                                      ReadOnly="true" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudTextField Value="@PricingHelper.Margin(Model.SalePrice, Model.RegularPrice, Model.PurchasedPrice)" Label="Margin" Format="P2" Culture="@EnUs" T="decimal?"
+                                                      ReadOnly="true" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <MudCard Class="mt-6">
+                            <MudCardHeader Class="pb-0">
+                                <MudText Typo="Typo.h6">Pictures</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                @if (isLoadingFiles)
+                                {
+                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                                }
+                                <div class="@($"file-upload-container {PicturesSectionClass}")">
+                                    @if (!isLoadingFiles)
+                                    {
+                                        <PicturesList SelectedFiles="selectedFilesUrls"
+                                                      OnPictureModelClick="OnPictureModelClick"
+                                                      OnSelectedPictureClick="OnSelectedPictureClick"
+                                                      Pictures="Model.Pictures"
+                                                      CoverPicture="Model.CoverPicture" />
+                                    }
+
+                                    <MudFileUpload T="IReadOnlyList<IBrowserFile>"
+                                                   Accept=".webp,.jpg,.jpeg,.png"
+                                                   MaximumFileCount="5"
+                                                   Class="file-upload-buttom mt-0"
+                                                   OnFilesChanged="OnFilesChanged"
+                                                   Hidden="false"
+                                                   InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20"
+                                                   InputStyle="opacity:0"
+                                                   Multiple>
+                                        <ButtonTemplate Context="FileUploadButtonContext">
+                                            <MudPaper Outlined="true" Class="d-flex justify-center align-center">
+                                                <MudIcon Icon="@Icons.Material.Filled.CloudUpload"
+                                                         Title="Upload" Color="Color.Default"
+                                                         Style="font-size: 48px;" />
+                                            </MudPaper>
+                                        </ButtonTemplate>
+                                    </MudFileUpload>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    @if (Model.HasAttributes)
+                    {
+                        <AttributesList Attributes="@Model.Attributes"
+                                        SaveAttribute="@((args) => SaveAttribute(args.name, args.attribute))"
+                                        RemoveAttribute="RemoveAttribute" />
+
+                        <VariationList Variations="@Model.Variations" Attributes="@Model.Attributes"
+                                       SaveVariation="@((args) => SaveVariation(args.id, args.variation))"
+                                       RemoveVariation="RemoveVariation" />
+                    }
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudCard>
+                        <MudCardHeader Class="pb-0">
+                            <MudText Typo="Typo.h6">Product status</MudText>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudSelect @bind-Value="Model.Status" HelperText="Select an status for your product">
+                                @foreach (ProductStatusModel item in Enum.GetValues(typeof(ProductStatusModel)))
+                                {
+                                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudCardContent>
+                    </MudCard>
+                    @if (!Model.HasAttributes)
+                    {
+                        <MudCard Class="mt-6">
+                            <MudCardHeader Class="pb-0">
+                                <MudText Typo="Typo.h6">Inventory</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudNumericField Label="Stock" Min="0" Required="true"
+                                                 Immediate="false" Format="D" Culture="@EnUs" T="int?"
+                                                 HelperText="Stock amount of your product"
+                                @bind-Value="Model.Stock" For="@(()=>Model.Stock)"
+                                                 HideSpinButtons="true" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                    <MudCard Class="mt-6">
+                        <MudCardHeader Class="pb-0">
+                            <MudText Typo="Typo.h6">
+                                Categories
+                            </MudText>
+                        </MudCardHeader>
+                        <MudCardContent Style="max-height: 300px; overflow-y:scroll;">
+                            <MudChipSet @bind-SelectedValues="selectedCategories" MultiSelection="true" Filter="false">
+                                @foreach (var category in categories)
+                                {
+                                    <MudChip Color="Color.Primary" Variant="Variant.Text"
+                                             Text="@category.Name" Value="@category.Id" />
+                                }
+                            </MudChipSet>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    </MudContainer>
+    <NavigationLock ConfirmExternalNavigation="@(EditContext!.IsModified())" OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+}
+
+@code {
+
+}

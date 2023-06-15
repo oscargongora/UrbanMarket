@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+@inherits LayoutComponentBase
+
+<ThemeProvider></ThemeProvider>
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <AuthorizeView>
+        <Authorized>
+            <AppBar OnHamburgerMenuClick="@ToggleDrawerOpen" />
+            <MudDrawer @bind-Open="@drawerOpen" ClipMode="@DrawerClipMode.Docked">
+                <AppNavMenu />
+            </MudDrawer>
+        </Authorized>
+    </AuthorizeView>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+
+@code {
+    private bool drawerOpen = true;
+
+    private void ToggleDrawerOpen()
+    {
+        drawerOpen = !drawerOpen;
+    }
+}

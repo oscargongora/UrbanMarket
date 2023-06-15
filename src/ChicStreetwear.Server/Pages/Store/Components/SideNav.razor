@@ -1,0 +1,21 @@
+﻿@using ChicStreetwear.Server.Pages.Store.State.Layout;
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent;
+
+<div class="@($"side-nav-component {(LayoutState.Value.SideNavVisible?"open": "closed")}")">
+    <nav>
+        <div class="container-fluid">
+            <NavBrand />
+            <NavLinks DisplayColumn="true" />
+        </div>
+    </nav>
+    <div class="backdrop" onclick="@(()=>Dispatcher.Dispatch(new ToggleSideNavVisibilityAction()))">
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private IState<LayoutState> LayoutState { get; set; } = default!;
+
+    [Inject]
+    public IDispatcher Dispatcher { get; set; } = default!;
+}

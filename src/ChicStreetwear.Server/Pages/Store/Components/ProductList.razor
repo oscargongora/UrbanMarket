@@ -1,0 +1,100 @@
+﻿@using ChicStreetwear.Server.Pages.Store.Components;
+@using ChicStreetwear.Server.Pages.Store.State.Cart;
+@using ChicStreetwear.Server.Services;
+@using ChicStreetwear.Shared.Models.Cart;
+@using System.Globalization;
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+<div class="product-list-component @Class">
+    <h2 class="@TitleClass">@Title</h2>
+
+    <div class="container-fluid">
+        @if (Products is null)
+        {
+            <p>
+                Loading...
+            </p>
+        }
+        else
+        {
+            @foreach (var item in Products)
+            {
+                <div class="card">
+                    <img class="card-img-top @(item.ThumbnailUrl is null? "placeholder-pic": "")" src="@(item.ThumbnailUrl?? "assets/tag-solid.svg")" />
+
+                    <div class="card-body">
+                        <h6 class="card-title" @onclick="()=>HandleCardTitleClick(item.ProductId)">
+                            @item.Name
+                        </h6>
+                        <h6 class="@(item.IsOnSale? "text-danger": "")">
+                            @item.Price.ToString("C2", CultureInfo.CreateSpecificCulture("en-US"))
+                        </h6>
+                        <p class="card-text">@item.Description</p>
+                        <Rating Value="@(item.Rating.Value)" Count="@(item.Rating.Count)" />
+                        @{
+                            CartProductStateModel cartProduct = new(item.ProductId, item.VariationId, 1);
+                        }
+                        @if (CartState.Value.Products.Contains(cartProduct))
+                        {
+                            <button class="btn btn-cart-remove" onclick="@(()=>OnRemoveProductFromCartClick(cartProduct))">
+                                Remove from cart
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-cart-add" onclick="@(()=>OnAddProductToCartClick(cartProduct))">
+                                Add to cart
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private ProtectedLocalStorage _localStorage { get; set; } = default!;
+
+    [Inject]
+    private IState<CartState> CartState { get; set; } = default!;
+
+    [Inject]
+    public IDispatcher Dispatcher { get; set; } = default!;
+
+    [Inject]
+    public CartService CartService { get; set; } = default!;
+
+    [Parameter]
+    public string Title { get; set; } = default!;
+
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    [Parameter]
+    public string TitleClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public List<StoreProductModel>? Products { get; set; }
+
+    private async Task OnAddProductToCartClick(CartProductStateModel cartProduct)
+    {
+        await CartService.AddProductToCart(CartState.Value.Products, cartProduct);
+        //Dispatcher.Dispatch(new AddProductToCartAction(cartProduct));
+    }
+
+    private async Task OnRemoveProductFromCartClick(CartProductStateModel cartProduct)
+    {
+        await CartService.RemoveProductFromCart(CartState.Value.Products, cartProduct);
+        //Dispatcher.Dispatch(new RemoveProductFromCartAction(cartProduct));
+    }
+
+    private void HandleCardTitleClick(Guid productId)
+    {
+        Navigation.NavigateTo($"/store/product/{productId}");
+    }
+}

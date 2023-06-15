@@ -1,0 +1,124 @@
+﻿@page "/manage/orders/edit/{id:guid}"
+@using ChicStreetwear.Client.Components
+@using ChicStreetwear.Client.Pages.Order.Components
+@using ChicStreetwear.Shared.Models.Order;
+@using Microsoft.AspNetCore.Authorization;
+
+@attribute [Authorize]
+
+@if (isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.False" Style="max-width: 960px; margin: 0 auto;">
+        <EditForm class="preventSubmitOnEnter" EditContext="EditContext" OnValidSubmit="OnValidSubmitAsync" novalidate>
+            <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="true" />
+            <FormToolbarTemplate Id="Id" OnDeleteClick="OnDeleteClick" ShowDeleteButton="false" Routing="Routing" />
+
+            <MudGrid Class="mt-3">
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal"
+                                                 TimelinePosition="TimelinePosition.Bottom" TimelineAlign="TimelineAlign.Start">
+                                        <MudTimelineItem Color="Color.Error">
+                                            <MudText Typo="Typo.subtitle1" Color="Color.Error">Placed</MudText>
+                                            <MudText Typo="Typo.subtitle2">
+                                                @Model.PlacedDate
+                                            </MudText>
+                                        </MudTimelineItem>
+
+                                        <MudTimelineItem Color="@(Model.Status.Equals(OrderStatusModel.Dispatched)? Color.Warning: Color.Default)"
+                                                         TimelineAlign="TimelineAlign.End">
+                                            @if (Model.Status.Equals(OrderStatusModel.Dispatched))
+                                            {
+                                                <MudText Typo="Typo.subtitle1" Color="Color.Warning">Dispatched</MudText>
+                                                <MudText Typo="Typo.subtitle2">
+                                                    @Model.DispatchedDate
+                                                </MudText>
+                                            }
+                                        </MudTimelineItem>
+
+                                        <MudTimelineItem Color="@(Model.Status.Equals(OrderStatusModel.Delivered)? Color.Success: Color.Default)"
+                                                         TimelineAlign="TimelineAlign.End">
+                                            @if (Model.Status.Equals(OrderStatusModel.Delivered))
+                                            {
+                                                <MudText Typo="Typo.subtitle1" Color="Color.Success">Delivered</MudText>
+                                                <MudText Typo="Typo.subtitle2">
+                                                    @Model.DeliveredDate
+                                                </MudText>
+                                            }
+                                        </MudTimelineItem>
+
+
+                                    </MudTimeline>
+                                </MudItem>
+                                <MudItem xs="12" sm="7">
+                                    <MudList Clickable="true">
+                                        <MudListItem Icon="@Icons.Material.Filled.Place">
+                                            @Model.DeliveredAddress.AddressToString
+                                        </MudListItem>
+                                        <MudListItem Icon="@Icons.Material.Filled.AccountBox">
+                                            @Model.DeliveredAddress.ContactToString
+                                        </MudListItem>
+                                        <MudListItem Icon="@Icons.Material.Filled.Email">
+                                            @Model.ReceiptEmail
+                                        </MudListItem>
+                                        <MudListItem Icon="@Icons.Material.Filled.Phone">
+                                            @Model.DeliveredAddress.PhoneNumber
+                                        </MudListItem>
+                                        <AuthorizeView Roles="@(IdentityDefaults.ADMINISTRATOR_ROLE)">
+                                            <Authorized Context="authorizedContext">
+                                                <MudListItem Icon="@Icons.Material.Filled.Payment">
+                                                    @Model.PaymentIntent
+                                                </MudListItem>
+                                            </Authorized>
+                                        </AuthorizeView>
+
+                                    </MudList>
+                                </MudItem>
+                                @if (!Model.Status.Equals(OrderStatusModel.Delivered))
+                                {
+                                    <MudItem xs="12" sm="5">
+                                        <MudSelect @bind-Value="Model.Status" HelperText="Select an status for the order">
+                                            @foreach (OrderStatusModel item in Enum.GetValues(typeof(OrderStatusModel)))
+                                            {
+                                                if (item < Model.Status)
+                                                {
+                                                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                }
+
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudCard>
+                        <MudCardHeader>
+                            <MudText Typo="Typo.h6">Products</MudText>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <ProductList Products="Model.Products"></ProductList>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    </MudContainer>
+    <NavigationLock ConfirmExternalNavigation="@(EditContext!.IsModified())" OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
+}
+
+@code {
+
+}

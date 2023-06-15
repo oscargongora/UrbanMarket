@@ -1,0 +1,121 @@
+﻿@implements IAsyncDisposable
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Interfaces;
+@using ChicStreetwear.Shared.Models.Components;
+@using MudBlazor.Services
+@using System.Text.Json;
+@using System.Text;
+@using System.Web;
+@typeparam TModel where TModel : IEntityModelBase
+@inject HttpClient _httpClient
+@inject NavigationManager Navigation
+
+<MudToolBar Class="mt-4 mt-sm-6">
+    <MudText Typo="Typo.h5">@Title</MudText>
+    <MudSpacer />
+    @if (ShowAddButton)
+    {
+        <MudButton Href="@Routing!.CreatePage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Success">Add @Routing.EntityName</MudButton>
+    }
+</MudToolBar>
+<MudDataGrid ServerData="@(new Func<GridState<TModel>, Task<GridData<TModel>>>(ServerReload))"
+             Hover="true" @ref="DataGridRef" FixedHeader="true" FixedFooter="true" Class="ma-4 ma-sm-6"
+             Height="@DataGridHeight" RowClick="@OnRowClicked" T="TModel" Dense="Dense">
+    <ToolBarContent>
+
+        <MudTextField @bind-Value="SearchText"
+                      DebounceInterval="500"
+                      OnDebounceIntervalElapsed="OnSearch"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      AdornmentColor="Color.Secondary"
+                      Placeholder="Search"
+                      Clearable="true" />
+    </ToolBarContent>
+
+    <Columns>
+        @ColumnsFragment
+    </Columns>
+
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudDataGridPager T="TModel" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? ColumnsFragment { get; set; }
+
+    [Parameter]
+    public bool ShowAddButton { get; set; } = true;
+
+    private MudDataGrid<TModel>? DataGridRef;
+    private string DataGridHeight => CurrentBreakpoint == Breakpoint.Xs ? "calc(100vh - 276px)" : "calc(100vh - 316px)";
+    private string SearchText = string.Empty;
+
+    [Inject]
+    private IBreakpointService? BreakpointListener { get; set; }
+    private Guid _breakpointServiceSubscriptionId;
+    private Breakpoint CurrentBreakpoint;
+    private readonly ResizeOptions ResizeOptions = new() { ReportRate = 250, NotifyOnBreakpointOnly = true };
+
+    [Parameter]
+    public RoutingModel? Routing { get; set; }
+
+    [Parameter]
+    public bool Dense { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var subscriptionResult = await BreakpointListener!.Subscribe(OnBreakpointChange, ResizeOptions);
+            _breakpointServiceSubscriptionId = subscriptionResult.SubscriptionId;
+            OnBreakpointChange(subscriptionResult.Breakpoint);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void OnBreakpointChange(Breakpoint breakpoint)
+    {
+        CurrentBreakpoint = breakpoint;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSearch(string text)
+    {
+        SearchText = text;
+        DataGridRef!.ReloadServerData();
+
+    }
+
+    private async Task<GridData<TModel>> ServerReload(GridState<TModel> state)
+    {
+        var response = await _httpClient.GetAsync(Routing!.GetDataGridApiEndpoint(SearchText, state.SortDefinitions,
+            state.FilterDefinitions, state.Page + 1, state.PageSize));
+        var responseContent = new PaginatedListModel<TModel>(new(), 0);
+        if (response.IsSuccessStatusCode)
+        {
+            responseContent = await response.Content.ReadFromJsonAsync<PaginatedListModel<TModel>>();
+        }
+
+        return new GridData<TModel>() { TotalItems = responseContent!.TotalItems, Items = responseContent.Items };
+    }
+
+    void OnRowClicked(DataGridRowClickEventArgs<TModel> args)
+    {
+        Navigation.NavigateTo(Routing!.EditPage(args.Item.Id));
+    }
+
+    public async ValueTask DisposeAsync() => await BreakpointListener!.Unsubscribe(_breakpointServiceSubscriptionId);
+}

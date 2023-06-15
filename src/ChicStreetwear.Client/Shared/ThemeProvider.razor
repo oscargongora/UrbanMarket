@@ -1,0 +1,26 @@
+﻿@inherits FluxorComponent
+@using ChicStreetwear.Client.State;
+
+<MudThemeProvider @ref="@_mudThemeProvider" IsDarkMode="@State.Value.Theme.IsDarkMode" />
+
+@code {
+    private MudThemeProvider _mudThemeProvider;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var localStorageMode = await GetModeFromLocalStorage();
+            var systemMode = await _mudThemeProvider.GetSystemPreference();
+            await SetThemeMode(localStorageMode ?? systemMode);
+            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnSystemPreferenceChanged(bool newValue)
+    {
+        await SetThemeMode(newValue);
+        StateHasChanged();
+    }
+}

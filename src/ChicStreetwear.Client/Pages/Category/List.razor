@@ -1,0 +1,18 @@
+﻿@page "/manage/categories"
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Models.Components;
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = IdentityDefaults.ADMINISTRATOR_ROLE)]
+
+<ChicStreetwear.Client.Components.DataGridTemplate TModel="CategoryDataGridItemModel"
+                                                   Routing="@RoutingHelper.Category" Dense="false"
+                                                   Title="Categories">
+    <ColumnsFragment>
+        <PropertyColumn Property="category => category.Name" T="CategoryDataGridItemModel" TProperty="string" />
+        <PropertyColumn Property="category => category.Description" T="CategoryDataGridItemModel" TProperty="string" />
+        <PropertyColumn Property="category => category.Products" T="CategoryDataGridItemModel" TProperty="int" />
+    </ColumnsFragment>
+</ChicStreetwear.Client.Components.DataGridTemplate>
+
+@code {
+}

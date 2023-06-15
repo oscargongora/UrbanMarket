@@ -1,0 +1,104 @@
+﻿@using ChicStreetwear.Server.Pages.Store.Components
+@using ChicStreetwear.Server.Pages.Store.State.Cart;
+@using ChicStreetwear.Server.Services;
+
+@inherits LayoutComponentBase
+
+<div id="store-layout">
+    <StoreHeader />
+
+    <SideNav />
+
+    <main id="app-main">
+        @Body
+    </main>
+
+    <footer>
+        <div class="container-fluid">
+            <div class="row g-3 justify-content-between">
+                <div class="col-12 col-lg-3">
+                    <NavBrand />
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6>Shop</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/best-sellers">
+                                Best sellers
+                            </NavLink>
+                        </li>
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/products">
+                                Men
+                            </NavLink>
+                        </li>
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/products">
+                                Women
+                            </NavLink>
+                        </li>
+
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6>Company</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/about-us">
+                                About us
+                            </NavLink>
+                        </li>
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/contact">
+                                Contact
+                            </NavLink>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6>Get Help</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/faqs">
+                                FAQs
+                            </NavLink>
+                        </li>
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/terms-of-use">
+                                Terms of use
+                            </NavLink>
+                        </li>
+                        <li class="mb-1">
+                            <NavLink class="text-decoration-none" href="/store/trackorder">
+                                Track order
+                            </NavLink>
+                        </li>
+                    </ul>
+                </div>
+                <div id="payment-methods" class="col-6 col-md-3 col-lg-2">
+                    <h6>Payment methods</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-1">
+                            <img src="assets/mastercard-logo.svg" />
+                        </li>
+                        <li class="mb-1">
+                            <img src="assets/visa-logo.svg" />
+                        </li>
+                        <li class="mb-1">
+                            <img src="assets/paypal-logo.svg" />
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+            <div class="row justify-content-center">
+                <div class="col">
+                    <p class="text-center m-0">Copyright ©2023 URBAN MARKET. all right reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+@code {
+}

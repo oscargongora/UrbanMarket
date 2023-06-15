@@ -1,0 +1,144 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#product-page {
+    margin: 96px auto 0;
+
+    #product-section {
+        > .container-fluid {
+            display: flex;
+
+            #product-images {
+                width: 50%;
+                padding: 0 16px 0 0;
+
+                #current-image {
+                    margin: 0 0 16px;
+                    height: 400px;
+
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: contain;
+
+                        &.placeholder-pic {
+                            opacity: 5%;
+                        }
+                    }
+                }
+
+                #others-images {
+                    display: flex;
+                    gap: 16px;
+                    flex-flow: row wrap;
+                    justify-content: center;
+                    align-items: center;
+
+                    > div {
+                        img {
+                            max-width: 80px;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+
+            #product-description {
+                padding: 96px 0 0 16px;
+                width: 50%;
+
+                > h2 {
+                    color: map.get($colors, dark);
+                    font-size: map.get($font-sizes, fs4);
+                    font-weight: 700;
+                    max-width: 20ch;
+                }
+
+                .rating-component {
+                    margin: 0 0 16px;
+                }
+
+                > p {
+                    max-width: 50ch;
+                    color: map.get($colors, dark);
+                    margin: 0 0 16px;
+                    font-size: map.get($font-sizes, 2);
+                    font-weight: 300;
+                }
+
+                > .price {
+                    margin: 0 0 16px;
+
+                    > div {
+                        display: flex;
+                        gap: 16px;
+
+                        h3 {
+                            color: map.get($colors, dark);
+                            font-size: map.get($font-sizes, fs3);
+                            font-weight: 700;
+                        }
+
+                        span {
+                            background-color: rgba(map.get($colors, red), 0.10);
+                            color: map.get($colors, red);
+                            font-size: map.get($font-sizes, fs1);
+                            font-weight: 700;
+                            padding: 1px 6px;
+                            align-self: flex-start;
+                            border-radius: 4px;
+                        }
+                    }
+
+                    > span {
+                        text-decoration: line-through;
+                        color: rgba(map.get($colors, dark), 0.5);
+                        font-size: map.get($font-sizes, fs1);
+                        font-weight: 700;
+                    }
+                }
+
+                > .actions {
+                    button {
+                        font-size: map.get($font-sizes, fs2);
+                        align-self: start;
+                        min-width: 150px;
+
+                        &.btn-cart-remove {
+                            background-color: map.get($colors, dark);
+                            color: map.get($colors, white);
+                        }
+
+                        &.btn-cart-add {
+                            border: 0.8px solid map.get($colors, dark);
+                            background-color: map.get($colors, white);
+                            color: map.get($colors, dark);
+                        }
+                    }
+                }
+            }
+
+            @media (width < map.get($breakpoints, md)) {
+                flex-direction: column;
+
+                #product-images {
+                    width: 100%;
+
+                    #current-image {
+                        margin: 0 0 16px;
+                        height: 200px;
+                    }
+                }
+
+                #product-description {
+                    width: 100%;
+
+                    > h2 {
+                        font-size: map.get($font-sizes, fs3);
+                        margin: 0 0 32px;
+                    }
+                }
+            }
+        }
+    }
+}

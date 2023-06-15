@@ -1,0 +1,17 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#checkout-page {
+    margin: 96px auto 0;
+
+    .page-section {
+        > .container-fluid {
+            max-width: 480px;
+
+            > form {
+                box-shadow: $card-box-shadow;
+                padding: 16px;
+            }
+        }
+    }
+}

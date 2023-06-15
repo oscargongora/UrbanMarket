@@ -1,0 +1,42 @@
+﻿@page "/manage/categories/edit/{id:guid}"
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Client.Models;
+@using ChicStreetwear.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = IdentityDefaults.ADMINISTRATOR_ROLE)]
+
+@inject HttpClient _httpClient
+
+@if (model is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ChicStreetwear.Client.Components.FormTemplate Id="@Id" Model="@model" TModel="UpdateCategoryModel" Routing="@RoutingHelper.Category">
+        <FieldsFragment>
+            <MudTextField Required="true" Label="Name" HelperText="@($"Max. {Constants.Fields.NAME_MAXLENGTH} characters")"
+                      @bind-Value="model.Name" For="@(() => model.Name)" />
+            <MudTextField Required="true" Label="Description" Class="mt-3" HelperText="@($"Max. {Constants.Fields.DESCRIPTION_MAXLENGTH} characters")"
+                      @bind-Value=" model.Description" For="@(() => model.Description)" />
+        </FieldsFragment>
+    </ChicStreetwear.Client.Components.FormTemplate>
+}
+
+
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private UpdateCategoryModel? model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await _httpClient.GetAsync(RoutingHelper.Category.GetByIdApiEndpoint((Guid)Id));
+        if (response.IsSuccessStatusCode)
+        {
+            model = await response.Content.ReadFromJsonAsync<UpdateCategoryModel>();
+        }
+    }
+}

@@ -1,0 +1,110 @@
+﻿@using System.Globalization;
+@using ChicStreetwear.Client.Helpers;
+@using ChicStreetwear.Shared.Helpers;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5">@(Model.Id.Equals(Guid.Empty) ? "Create" : "Edit") variation</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="Model" OnSubmit="OnSubmit" novalidate>
+            <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
+            <MudCard Elevation="0">
+                <MudCardContent Class="pa-0">
+                    <ValidationSummary />
+                    @foreach (var av in Model.Attributes)
+                    {
+                        <MudTextField T="string" Label="@(av.Attribute.Name)" id="@(av.Attribute.Name)"
+                                      Required="true"
+                                      RequiredError="@($"The {av.Attribute.Name} attribute is required")"
+                        @bind-Value="av.Value"
+                                      HelperText="@($"Type the value for {av.Attribute.Name} attribute")" />
+                    }
+                    <MudNumericField Label="Stock" Min="0"
+                                     Format="D" Culture="@CultureInfo.GetCultureInfo("en-US")" T="int"
+                                     HelperText="Stock amount of your variation"
+                                     For="@(()=>Model.Stock)"
+                    @bind-Value="Model.Stock"
+                                     HideSpinButtons="true" />
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField Label="Price" Min="0"
+                                             Format="C" Culture="@CultureInfo.GetCultureInfo("en-US")"
+                                             HelperText=""
+                                             For="@(()=>Model.RegularPrice)"
+                            @bind-Value="@Model.RegularPrice"
+                                             HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField Label="Sale Price" Min="0"
+                                             Format="C" Culture="@CultureInfo.GetCultureInfo("en-US")"
+                                             HelperText=""
+                                             For="@(()=>Model.SalePrice)"
+                            @bind-Value="@Model.SalePrice"
+                                             HideSpinButtons="true" />
+                        </MudItem>
+                    </MudGrid>
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField Label="Purchased Price" Min="0"
+                                             Format="C" Culture="@CultureInfo.GetCultureInfo("en-US")"
+                                             HelperText=""
+                                             For="@(()=>Model.PurchasedPrice)"
+                            @bind-Value="@Model.PurchasedPrice"
+                                             HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField Value="@PricingHelper.Profit(Model.SalePrice, Model.RegularPrice, Model.PurchasedPrice)"
+                                          Label="Profit" Format="C" Culture="@CultureInfo.GetCultureInfo("en-US")"
+                                          ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField Value="@PricingHelper.Margin(Model.SalePrice, Model.RegularPrice, Model.PurchasedPrice)"
+                                          Label="Margin" Format="P2" Culture="@CultureInfo.GetCultureInfo("en-US")"
+                                          ReadOnly="true" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+                <MudCardActions Class="gap-x-6 d-flex flex-row mt-4 pb-4 px-0">
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <div class="flex-1 px-4"></div>
+                    </MudHidden>
+
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <div class="flex-1 px-4"></div>
+                    </MudHidden>
+
+                    <MudButton Class="flex-1" ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Save"
+                               Variant="Variant.Filled" Color="Color.Primary">
+                        Save
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public VariationFormDialogModel Model { get; set; }
+    public EditContext? EditContext { get; set; }
+
+    FluentValidationValidator _fluentValidationValidator;
+
+    protected override void OnInitialized()
+    {
+        EditContext = new(Model!);
+        base.OnInitialized();
+    }
+
+    async void OnSubmit()
+    {
+        if (await _fluentValidationValidator!.ValidateAsync())
+        {
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+}

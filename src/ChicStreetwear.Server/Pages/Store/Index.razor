@@ -1,0 +1,140 @@
+﻿@page "/store"
+@using ChicStreetwear.Server.Pages.Store.Components;
+@using ChicStreetwear.Server.Pages.Store.State.Layout;
+
+<div id="index-page" class="page">
+    <div id="landing-carousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @foreach (var item in _carouselItems.Select((value, index) => (value, index)))
+            {
+                <div class=@($"carousel-item {(item.index == 0? "active": "")}")>
+                    <img src=@item.value.ImgSrc srcset=@item.value.ImgSrcSet>
+
+                    <div class="carousel-caption">
+                        <div class="container">
+                            <h2>@item.value.Heading</h2>
+                            <h5>@item.value.SubHeading</h5>
+                            <NavLink class="btn btn-light" href=@item.value.NavLinkHref>
+                                @(item.value.NavLinkText)
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#landing-carousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#landing-carousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <div id="our-brands-section" class="page-section">
+        <h2 class="page-section-title">Our brands</h2>
+        <div class="container-fluid">
+            @for (int i = 1; i <= 9; i++)
+            {
+                <img loading="lazy" src=@($"assets/logo ({i}).svg")>
+            }
+        </div>
+    </div>
+
+    <div id="our-services-section" class="page-section">
+        <h2 class="page-section-title">Our priority is to guarantee a good customer experience</h2>
+
+        <div class="container-fluid">
+            @foreach (var item in _serviceItems)
+            {
+                <div class="card">
+                    <div class="icon-container">
+                        <i class=@item.Icon></i>
+                    </div>
+                    <div class="card-body p-0 pt-3">
+                        <h6 class="card-title">@item.Title</h6>
+                        <p class="card-text">@item.Description</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="our-picks-section" class="page-section">
+        <h2 class="page-section-title">Our curated picks</h2>
+        <div class="container-fluid">
+            @foreach (var item in _pickItems)
+            {
+                <div class="card">
+                    <img loading="lazy"
+                         src=@item.ImgSrc
+                         srcset=@item.ImgSrcSet
+                         sizes="(width < 576px) 25vw, 50vw"
+                         class="card-img">
+                    <div class="card-img-overlay bg-black bg-opacity-25">
+                        <NavLink class="btn" href=@item.NavLinkHref>
+                            @(item.NavLinkText)
+                        </NavLink>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <ProductList Title="Our featured products"
+                 Class="page-section"
+                 TitleClass="page-section-title"
+                 Products="@_featuredProducts" />
+
+    <div id="offer-section" class="page-section">
+        <div class="container-fluid">
+            <div class="card">
+                <img src="assets/offer-sm.webp" class="img-fluid rounded-start" loading="lazy"
+                     srcset="assets/offer-sm.webp 440w, assets/offer-md.webp 850w, assets/offer.webp 1400w"
+                     sizes="(max-width: 440px) 440px,(max-width: 768px) 850px, 1400px">
+                <div class="card-body">
+                    <p class="card-text text-uppercase">limit offer</p>
+                    <h2>50% off for a limited time on our best products</h2>
+                    <NavLink class="btn btn-light" href="/store/products">
+                        Grab now
+                    </NavLink>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="subscribe-section" class="page-section">
+        <h2 class="page-section-title">
+            Subscribe to our newsletter to get updates to our latest collections
+        </h2>
+        <p class="text-body">
+            Get 20% off on your first order just by subscribing to our newsletter
+        </p>
+        <div class="row justify-content-center g-3 mb-3">
+            <div class="col-8 col-sm-5">
+                <div class="input-group">
+                    <div class="input-group-text">
+                        <i class="fa-regular fa-envelope"></i>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Enter your email">
+                </div>
+            </div>
+
+            <div class="col-8 col-sm-3">
+                <button id="subscribe-btn" class="btn w-100">Subscribe</button>
+            </div>
+        </div>
+        <p id="read-our-privacy-policy-paragraph" class="text-black-50">
+            You will be able to unsubscribe at any time. Read our Privacy Policy
+            <NavLink class="p-0 d-inline text-black" href="/store/privacy-policy" style="font-size: 14px; font-weight: 700; text-decoration:underline;">
+                here
+            </NavLink>
+        </p>
+    </div>
+</div>
+
+@code {
+}
+

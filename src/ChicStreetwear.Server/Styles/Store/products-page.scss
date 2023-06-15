@@ -1,0 +1,134 @@
+@use "sass:map";
+@import '_variables.scss';
+
+#products-page {
+    margin: 96px auto 0;
+
+    #products-section {
+        > .container-fluid {
+            display: flex;
+            flex-flow: row nowrap;
+
+            .products-filter-section {
+                width: 20%;
+                padding: 0 16px 0 0 !important;
+
+                > div {
+                    margin: 0 0 16px;
+                }
+
+                .form-label {
+                    font-size: map.get($font-sizes, fs1);
+                    font-weight: 500;
+                }
+
+                .price-group {
+                    .btn-link {
+                        font-size: map.get($font-sizes, fs1);
+                        color: map.get($colors, dark);
+                        font-weight: 300;
+                        text-decoration: none;
+                        padding: 6px 0 0;
+                    }
+                }
+
+                button#filter-btn {
+                    margin: 0 0 32px;
+                    font-size: map.get($font-sizes, fs2);
+                    width: 100%;
+
+                    &.btn-dark {
+                        background-color: map.get($colors, dark);
+                        color: map.get($colors, white);
+                    }
+
+                    &.btn-light {
+                        border: 0.8px solid map.get($colors, dark);
+                        background-color: map.get($colors, white);
+                        color: map.get($colors, dark);
+                    }
+                }
+
+                select {
+                    border-radius: 0;
+                }
+            }
+
+            .product-list-component {
+                width: 80%;
+                padding: 0 0 0 16px !important;
+
+                h2 {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    #load-more-section {
+        > .container-fluid {
+            width: fit-content;
+        }
+    }
+
+    @media(width < map.get($breakpoints, lg)) {
+        #products-section {
+            > .container-fluid {
+                flex-flow: column nowrap;
+
+                .products-filter-section {
+                    width: 100%;
+                    padding: 0 !important;
+                    display: grid;
+                    grid-template: auto / repeat(6, 1fr);
+                    gap: 16px;
+                    margin: 0 0 32px;
+
+                    > div {
+                        margin: 0
+                    }
+
+                    .price-group {
+                        .btn-link {
+                            display: none;
+                        }
+                    }
+
+                    button#filter-btn {
+                        margin: 0;
+                        order: 10;
+                        align-self: end;
+                    }
+                }
+
+                .product-list-component {
+                    width: 100%;
+                    padding: 0 !important;
+                    >.container-fluid{
+                        padding: 0;
+                    }
+                }
+            }
+        }
+    }
+
+    @media(width < map.get($breakpoints, md)) {
+        #products-section {
+            > .container-fluid {
+                .products-filter-section {
+                    grid-template: auto / repeat(3, 1fr);
+                }
+            }
+        }
+    }
+
+    @media(width < map.get($breakpoints, sm)) {
+        #products-section {
+            > .container-fluid {
+                .products-filter-section {
+                    grid-template: auto / repeat(2, 1fr);
+                }
+            }
+        }
+    }
+}

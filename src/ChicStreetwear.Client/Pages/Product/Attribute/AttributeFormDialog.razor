@@ -1,0 +1,57 @@
+﻿@using ChicStreetwear.Shared.Models.Product;
+@using System.Globalization;
+
+<MudDialog Style="width: 300px">
+    <TitleContent>
+        <MudText Typo="Typo.h5">@(Model.Name.Equals(string.Empty) ? "Create" : "Edit") attribute</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="Model" OnValidSubmit="OnSubmit">
+            <FluentValidationValidator @ref="_fluentValidationValidator" DisableAssemblyScanning="@true" />
+            <MudCard Elevation="0">
+                <MudCardContent Class="pa-0">
+                    <ValidationSummary />
+                    <MudTextField Label="Name"
+                                  For="@(()=>Model.Name)"
+                                  @bind-Value="Model.Name"
+                                  HelperText="@($"Type the name for the attribute")" />
+                </MudCardContent>
+                <MudCardActions Class="gap-x-6 d-flex flex-row mt-4 pb-4 px-0">
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <div class="flex-1 px-4"></div>
+                    </MudHidden>
+
+                    <MudButton Class="flex-1" ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.Save"
+                               Variant="Variant.Filled" Color="Color.Primary">
+                        Save
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public AttributeFormDialogModel Model { get; set; }
+    public EditContext? EditContext { get; set; }
+
+    FluentValidationValidator _fluentValidationValidator;
+
+    protected override void OnInitialized()
+    {
+        EditContext = new(Model!);
+        base.OnInitialized();
+    }
+
+    async void OnSubmit()
+    {
+        if (await _fluentValidationValidator!.ValidateAsync())
+        {
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+}
